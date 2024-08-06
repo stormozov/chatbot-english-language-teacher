@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship, DeclarativeBase
 
@@ -9,50 +8,39 @@ class Base(DeclarativeBase):
     pass
 
 
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    created_at = Column(DateTime, default=datetime.now)
+
+
 class Category(Base):
     __tablename__ = 'categories'
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-
-    words = relationship('Word', backref='category')
+    title = Column(String, nullable=False, unique=True)
 
 
-class Words(Base):
+class Word(Base):
     __tablename__ = 'words'
     id = Column(Integer, primary_key=True)
-    word = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-    category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
-
-    translations = relationship('Translation', backref='word')
-    category = relationship('Category', backref='words')
+    word = Column(String, nullable=False, unique=True)
+    category_id = Column(Integer, ForeignKey('categories.id'))
+    category = relationship("Category", backref="words")
 
 
-class Translations(Base):
-    __tablename__ = 'translations'
+class TranslatedWord(Base):
+    __tablename__ = 'translated_words'
     id = Column(Integer, primary_key=True)
-    word_id = Column(Integer, ForeignKey('words.id'), nullable=False)
-    translation = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    word_id = Column(Integer, ForeignKey('words.id'))
+    translation = Column(String, nullable=False)
+    word = relationship("Word", backref="translated_words")
 
 
-class Users(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-
-    words = relationship('UserWord', backref='user')
-    added_words = relationship('UserAddedWord', backref='user')
-
-
-class UserWords(Base):
+class UserWord(Base):
     __tablename__ = 'user_words'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    word_id = Column(Integer, ForeignKey('words.id'), nullable=False)
-    learned = Column(Boolean, nullable=False, default=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now)
-
-    words = relationship('Word', backref='user_words')
+    user_id = Column(Integer, ForeignKey('users.id'))
+    word_id = Column(Integer, ForeignKey('words.id'))
+    user = relationship("User", backref="user_words")
+    word = relationship("Word", backref="user_words")
