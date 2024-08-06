@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, CheckConstraint, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship, DeclarativeBase
 
 
@@ -9,13 +9,24 @@ class Base(DeclarativeBase):
     pass
 
 
+class Category(Base):
+    __tablename__ = 'categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+
+    words = relationship('Word', backref='category')
+
+
 class Words(Base):
     __tablename__ = 'words'
     id = Column(Integer, primary_key=True)
     word = Column(String(255), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now)
+    category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
 
     translations = relationship('Translation', backref='word')
+    category = relationship('Category', backref='words')
 
 
 class Translations(Base):
