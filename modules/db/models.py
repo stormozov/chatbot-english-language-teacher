@@ -37,10 +37,12 @@ class TranslatedWord(Base):
     word = relationship("Word", backref="translated_words")
 
 
-class UserWord(Base):
-    __tablename__ = 'user_words'
+class UserWordSetting(Base):
+    __tablename__ = 'user_word_settings'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     word_id = Column(Integer, ForeignKey('words.id'))
-    user = relationship("User", backref="user_words")
-    word = relationship("Word", backref="user_words")
+    is_hidden = Column(Boolean, default=False)
+    is_deleted = Column(Boolean, default=False)
+    user = relationship("User", backref="user_word_settings")
+    word = relationship("Word", backref="user_word_settings")
