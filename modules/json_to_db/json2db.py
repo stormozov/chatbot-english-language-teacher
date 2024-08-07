@@ -1,4 +1,4 @@
-from .read_json_file import read_json_file
+from modules.read_file.read_file import read_file
 from ..db.models import Category, Word, TranslatedWord
 
 
@@ -114,7 +114,7 @@ def import_json_data_to_db(session, path: str) -> None:
         Raises:
             Exception: If an error occurs during the import process.
     """
-    data = read_json_file(path)
+    data = read_file(path)
     categories, words, translations = get_existing_objects(session)
 
     try:
