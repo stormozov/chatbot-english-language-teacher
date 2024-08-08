@@ -18,6 +18,7 @@ class User(Base):
     """
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
+    tg_id = Column(Integer, nullable=False, unique=True)
     username = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.now)
 
