@@ -1,6 +1,9 @@
 import random
+from typing import Union
 import telebot
 from telebot import types
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from modules.config.read_config import read_config
 from modules.db.db_session import create_db_session
 from modules.db.models import Word, TranslatedWord, UserWordSetting, User
@@ -20,8 +23,13 @@ CHATBOT_BTNS = CHATBOT_DATA['buttons']
 bot = telebot.TeleBot(TG_TOKEN)
 
 
+def get_user_id(session, message: types.Message) -> int:
+    """Get the user ID from the database"""
+    return session.query(User).filter_by(tg_id=message.from_user.id).first().id
+
+
 @bot.message_handler(commands=['start'])
-def start_message(message):
+def start_message(message: types.Message) -> None:
     """ Start message handler """
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['start_message'])
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
@@ -31,7 +39,7 @@ def start_message(message):
 
     # Check if the user is already in the database
     session = create_db_session(DB)[0]
-    user = session.query(User).filter_by(tg_id=message.from_user.id).first()
+    user = get_user_id(session, message)
 
     if not user:
         # If the user is not in the database, add them
@@ -43,7 +51,7 @@ def start_message(message):
 
 
 @bot.message_handler(content_types=['text'])
-def handle_text(message):
+def handle_quiz_or_word_management(message: types.Message) -> None:
     """
         A function that handles text messages from the user.
         It generates answer choices for a quiz based on the user's text input.
@@ -87,17 +95,24 @@ def handle_text(message):
             # Handling the case when there are no transfers
             bot.send_message(message.chat.id, 'Нет перевода для этого слова')
 
-        bot.register_next_step_handler(message, check_answer, word_id)
+        bot.register_next_step_handler(message, validate_and_feedback_user_answer, word_id)
 
     if message.text == CHATBOT_BTNS['add_word']:
         bot.send_message(message.chat.id, CHATBOT_MESSAGE['add_user_word'])
-        bot.register_next_step_handler(message, add_word)
+        bot.register_next_step_handler(message, handle_add_word_request)
     elif message.text == CHATBOT_BTNS['delete_word']:
         bot.send_message(message.chat.id, CHATBOT_MESSAGE['delete_user_word'])
-        bot.register_next_step_handler(message, delete_word)
+        bot.register_next_step_handler(message, handle_delete_word_request)
 
 
-def check_answer(message, card):
+def show_interaction_menu(bot: telebot.TeleBot, message: types.Message) -> None:
+    """Send the main menu"""
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add(*[types.KeyboardButton(CHATBOT_BTNS[btn]) for btn in ['next', 'add_word', 'delete_word']])
+    bot.send_message(message.chat.id, 'Выберите действие:', reply_markup=markup)
+
+
+def validate_and_feedback_user_answer(message: types.Message, card: int) -> None:
     """
         Check the user's answer against the correct word and send a response message.
 
@@ -125,52 +140,89 @@ def check_answer(message, card):
             f'Неправильно.\nПравильный ответ: {correct_word}'
         )
 
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    item1 = types.KeyboardButton(CHATBOT_BTNS['next'])
-    item2 = types.KeyboardButton(CHATBOT_BTNS['add_word'])
-    item3 = types.KeyboardButton(CHATBOT_BTNS['delete_word'])
-
-    markup.add(item1, item2, item3)
-    bot.send_message(message.chat.id, 'Выберите действие:', reply_markup=markup)
+    show_interaction_menu(bot, message)
 
 
-def add_word(message):
-    """Add a word to the database with the corresponding translation and user settings."""
+def get_word_obj(session, word: str, user_id: int) -> Union[Word, None]:
+    """Get the word object from the database"""
+    return session.query(Word).filter(func.lower(Word.word) == func.lower(word), Word.user_id == user_id).first()
+
+
+def add_word_to_db(session, word: str, user_id: int, translation: str, message: types.Message) -> None:
+    """Add a word to the database"""
+    try:
+        word_obj = Word(word=word, user_id=user_id)
+        translated_word_obj = TranslatedWord(word=word_obj, translation=translation)
+        user_word_setting_obj = UserWordSetting(user_id=user_id, word=word_obj)
+
+        session.add_all([word_obj, translated_word_obj, user_word_setting_obj])
+        session.commit()  # Commit the transaction
+    except IntegrityError as e:
+        session.rollback()  # Rollback the transaction on error
+        bot.send_message(message.chat.id, f'Слово {word} уже добавлено в вашем словаре.')
+
+
+def delete_word_from_db(session, word_obj: Word) -> None:
+    """Delete a word from the database"""
+    translated_words = session.query(TranslatedWord).filter_by(word_id=word_obj.id).all()
+    user_word_setting_obj = session.query(UserWordSetting).filter_by(word_id=word_obj.id).first()
+
+    for translated_word in translated_words:
+        session.delete(translated_word)
+
+    if user_word_setting_obj:
+        session.delete(user_word_setting_obj)
+
+    session.delete(word_obj)
+    session.commit()
+
+
+def inform_user_of_word_change(bot: telebot.TeleBot, message: types.Message, word: str, action: str) -> None:
+    """Inform the user of the change in the dictionary"""
+    if action == 'add':
+        bot.send_message(message.chat.id, f'Слово {word} и его перевод добавлены успешно!')
+    elif action == 'delete':
+        bot.send_message(message.chat.id, f'Слово {word} и его переводы удалены успешно!')
+
+
+def handle_add_word_request(message: types.Message) -> None:
+    """Handles the request to add a new word to the user's word list."""
     session = create_db_session(DB)[0]
-    user_id = session.query(User).filter_by(tg_id=message.from_user.id).first().id
+    user_id = get_user_id(session, message)
     word, translation = message.text.split(', ')
-    word_obj = session.query(Word).filter_by(word=word, user_id=user_id).first()
+    word_obj = get_word_obj(session, word, user_id)
 
     if not word_obj:
-        word_obj = Word(word=word, user_id=user_id)
-        session.add(word_obj)
-        session.commit()
-
-    translated_word_obj = session.query(TranslatedWord).filter_by(word_id=word_obj.id, translation=translation).first()
-    if not translated_word_obj:
-        translated_word_obj = TranslatedWord(word_id=word_obj.id, translation=translation)
-        session.add(translated_word_obj)
-        session.commit()
-
-    user_word_setting_obj = session.query(UserWordSetting).filter_by(user_id=user_id, word_id=word_obj.id).first()
-    if not user_word_setting_obj:
-        user_word_setting_obj = UserWordSetting(user_id=user_id, word_id=word_obj.id)
-        session.add(user_word_setting_obj)
-        session.commit()
+        add_word_to_db(
+            session, word, user_id,
+            translation, message
+        )
+        inform_user_of_word_change(bot, message, word, 'add')
 
     session.close()
-
-    bot.send_message(message.chat.id, f'Слово {word} и его перевод {translation} добавлены ✅ успешно!')
-
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    item1 = types.KeyboardButton(CHATBOT_BTNS['next'])
-    item2 = types.KeyboardButton(CHATBOT_BTNS['add_word'])
-    item3 = types.KeyboardButton(CHATBOT_BTNS['delete_word'])
-    markup.add(item1, item2, item3)
-
-    bot.send_message(message.chat.id, 'Выберите действие:', reply_markup=markup)
+    show_interaction_menu(bot, message)
 
 
-def start_bot():
-    """ Start telegrambot """
+def handle_delete_word_request(message: types.Message) -> None:
+    """Handles the request to delete a word from the user's word list."""
+    session = create_db_session(DB)[0]
+    user_id = get_user_id(session, message)
+    word = message.text
+    word_obj = get_word_obj(session, word, user_id)
+
+    if word_obj:
+        delete_word_from_db(session, word_obj)
+        inform_user_of_word_change(bot, message, word, 'delete')
+    else:
+        bot.send_message(message.chat.id, f'Слово {word} не найдено в вашем словаре.')
+
+    session.close()
+    show_interaction_menu(bot, message)
+
+
+def start_bot() -> None:
+    """
+    Starts the bot's polling process. This function initiates the bot's main loop, where it continuously checks for
+    updates and responds to user interactions.
+    """
     bot.polling()
