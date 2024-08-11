@@ -28,7 +28,10 @@ def get_word_obj(session, word: str, user_id: int) -> Union[Word, None]:
     return session.query(Word).filter(func.lower(Word.word) == func.lower(word), Word.user_id == user_id).first()
 
 
-def add_word_to_db(session, word: str, user_id: int, translation: str, message: types.Message) -> None:
+def add_word_to_db(
+        session, word: str, user_id: int,
+        translation: str, message: types.Message
+) -> None:
     """Add a word to the database"""
     try:
         word_obj = Word(word=word, user_id=user_id)
@@ -57,9 +60,25 @@ def delete_word_from_db(session, word_obj: Word) -> None:
     session.commit()
 
 
+def remove_word_from_view(session, user_id, word: str):
+    """Remove a word from the view"""
+    word_id = session.query(Word).filter_by(word=word).first().id
+    existing_setting = session.query(UserWordSetting).filter_by(user_id=user_id, word_id=word_id).first()
+
+    if existing_setting:
+        existing_setting.is_hidden = True
+    else:
+        remove = UserWordSetting(user_id=user_id, word_id=word_id, is_hidden=True)
+        session.add(remove)
+
+    session.commit()
+
+
 def inform_user_of_word_change(message: types.Message, word: str, action: str) -> None:
     """Inform the user of the change in the dictionary"""
-    if action == 'add':
-        bot.send_message(message.chat.id, f'Слово {word} и его перевод добавлены успешно!')
-    elif action == 'delete':
-        bot.send_message(message.chat.id, f'Слово {word} и его переводы удалены успешно!')
+    messages = {
+        'add': f'Слово {word} и его перевод добавлены успешно!',
+        'delete': f'Слово {word} и его переводы удалены успешно!',
+        'remove': f'Слово "{word}" было скрыто из вашей выборки'
+    }
+    bot.send_message(message.chat.id, messages.get(action, 'Unknown action'))
