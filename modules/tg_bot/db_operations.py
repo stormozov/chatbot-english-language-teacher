@@ -7,8 +7,13 @@ from modules.tg_bot.bot_init import bot
 
 
 def get_user_id(session, message: types.Message) -> int:
-    """Get the user ID from the database"""
-    return session.query(User).filter_by(tg_id=message.from_user.id).first().id
+    """Retrieves the user ID from the database based on the provided message."""
+    user = session.query(User).filter_by(tg_id=message.from_user.id).first()
+
+    if user is None:
+        add_new_user(session, message)
+
+    return user.id
 
 
 def add_new_user(session, message: types.Message) -> None:
@@ -27,7 +32,7 @@ def add_word_to_db(session, word: str, user_id: int, translation: str, message: 
     """Add a word to the database"""
     try:
         word_obj = Word(word=word, user_id=user_id)
-        translated_word_obj = TranslatedWord(word=word_obj, translation=translation)
+        translated_word_obj = TranslatedWord(word=word_obj, translation=translation, user_id=user_id)
         user_word_setting_obj = UserWordSetting(user_id=user_id, word=word_obj)
 
         session.add_all([word_obj, translated_word_obj, user_word_setting_obj])

@@ -1,6 +1,6 @@
 import random
 from telebot import types
-from modules.db.models import Word, TranslatedWord, UserWordSetting, User
+from modules.db.models import Word, TranslatedWord
 from modules.tg_bot.bot_config import CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
 from modules.tg_bot.db_operations import get_user_id, add_new_user
 from modules.tg_bot.menu import show_interaction_menu, show_word_variant_menu, show_one_item_menu
@@ -19,12 +19,7 @@ def start_message(message: types.Message) -> None:
 
     # Check if the user is already in the database
     session = SESSION
-    user = get_user_id(session, message)
-
-    if not user:
-        # If the user is not in the database, add them to the database
-        add_new_user(session, message)
-
+    get_user_id(session, message)
     session.close()
 
 
