@@ -14,7 +14,7 @@ def start_message(message: types.Message) -> None:
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['start_message'])
     show_one_item_menu(
         message, CHATBOT_BTNS['test_knowledge'],
-        'Нажми на кнопку ниже 👇, чтобы начать!'
+        CHATBOT_MESSAGE['second_message']
     )
 
     # Check if the user is already in the database
@@ -41,7 +41,7 @@ def handle_quiz_or_word_management(message: types.Message) -> None:
         translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
         session.close()
 
-        markup, word_id = show_word_variant_menu(message, words, word, random)
+        markup, word_id = show_word_variant_menu(words, word)
 
         if translations:
             russian_word = translations[0].translation
@@ -92,7 +92,7 @@ def validate_and_feedback_user_answer(message: types.Message, card: int) -> None
             f'Неправильно.\nПравильный ответ: {correct_word}'
         )
 
-    show_interaction_menu(message, CHATBOT_BTNS)
+    show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
 
 
 def start_bot() -> None:

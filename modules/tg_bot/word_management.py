@@ -21,7 +21,7 @@ def handle_add_word_request(message: types.Message) -> None:
         )
         inform_user_of_word_change(message, word, 'add')
 
-    show_interaction_menu(message, CHATBOT_BTNS)
+    show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
 
 
 def handle_delete_word_request(message: types.Message) -> None:
@@ -38,4 +38,4 @@ def handle_delete_word_request(message: types.Message) -> None:
     else:
         bot.send_message(message.chat.id, f'Слово {word} не найдено в вашем словаре.')
 
-    show_interaction_menu(message, CHATBOT_BTNS)
+    show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
