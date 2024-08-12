@@ -3,6 +3,7 @@ from telebot import types
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from modules.db.models import UserWordSetting, User, Word, TranslatedWord
+from modules.tg_bot.bot_config import CHATBOT_ERRORS
 from modules.tg_bot.bot_init import bot
 
 
@@ -23,13 +24,32 @@ def add_new_user(session, message: types.Message) -> None:
     session.commit()
 
 
-def check_word_in_db(session, word: str) -> Union[Word, None]:
-    """Check if the word is in the database"""
+def word_exists_in_db(session, word: str) -> Union[Word, None]:
+    """
+    Checks if a word exists in the database.
+
+    Args:
+        session: The database session to use for the query.
+        word (str): The word to check for existence.
+
+    Returns:
+        Union[Word, None]: The Word object if the word exists, otherwise None.
+    """
     return session.query(Word).filter_by(word=word).first()
 
 
-def get_word_obj(session, word: str, user_id: int) -> Union[Word, None]:
-    """Get the word object from the database"""
+def get_word_by_user_id(session, word: str, user_id: int) -> Union[Word, None]:
+    """
+    Retrieves a Word object from the database based on the provided word and user ID.
+
+    Args:
+        session: The database session to use for the query.
+        word (str): The word to search for in the database.
+        user_id (int): The ID of the user who owns the word.
+
+    Returns:
+        Union[Word, None]: The Word object if found, otherwise None.
+    """
     return session.query(Word).filter(func.lower(Word.word) == func.lower(word), Word.user_id == user_id).first()
 
 
@@ -67,7 +87,7 @@ def delete_word_from_db(session, word_obj: Word) -> None:
 
 def remove_word_from_view(session, user_id: int, word: str) -> None:
     """Remove a word from the view"""
-    word_id = check_word_in_db(session, word).id
+    word_id = word_exists_in_db(session, word).id
     existing_setting = session.query(UserWordSetting).filter_by(user_id=user_id, word_id=word_id).first()
 
     if existing_setting:
@@ -79,11 +99,12 @@ def remove_word_from_view(session, user_id: int, word: str) -> None:
     session.commit()
 
 
-def inform_user_of_word_change(message: types.Message, word: str, action: str) -> None:
+def inform_user_of_word_change(message: types.Message, action: str, word: Union[str, None] = None) -> None:
     """Inform the user of the change in the dictionary"""
     messages = {
         'add': f'Слово "{word}" и его перевод добавлены успешно!',
         'delete': f'Слово "{word}" и его переводы удалены успешно!',
-        'remove': f'Слово "{word}" было скрыто из вашей выборки'
+        'remove': f'Слово "{word}" было скрыто из вашей выборки',
+        'add_word_value': CHATBOT_ERRORS['add_word_value']
     }
     bot.send_message(message.chat.id, messages.get(action, 'Unknown action'))
