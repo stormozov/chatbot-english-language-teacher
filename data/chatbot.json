@@ -3,7 +3,7 @@
     "start_message": "Привет! Меня зовут Netology english chatbot \uD83E\uDD16, и я здесь, чтобы помочь тебе изучать английский язык \uD83C\uDDFA\uD83C\uDDF8 с помощью карточек слов. Давай начнем?",
     "second_message": "Нажми на кнопку ниже \uD83D\uDC47, чтобы начать!",
     "help": "Бот поддерживает следующие команды:",
-    "add_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово и его \uD83C\uDDF7\uD83C\uDDFA перевод через запятую (Например: 'english, английский'):",
+    "add_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово и его \uD83C\uDDF7\uD83C\uDDFA перевод через запятую (Например: 'English, Английский'):",
     "delete_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово для удаления:"
   },
   "buttons": {
@@ -11,5 +11,12 @@
     "next": "Дальше ➡\uFE0F",
     "add_word": "Добавить слово ➕",
     "delete_word": "Удалить слово \uD83D\uDDD1"
+  },
+  "error": {
+    "add_word_value": "Нужно ввести \uD83C\uDDFA\uD83C\uDDF8 английское слово и его \uD83C\uDDF7\uD83C\uDDFA перевод через запятую без спецсимволов и цифр!\n\nНапример: 'English, Английский'",
+    "delete_word_value": "Нужно ввести \uD83C\uDDFA\uD83C\uDDF8 английское слово для удаления!",
+    "add_word_exist": "Такое \uD83C\uDDFA\uD83C\uDDF8 английское слово уже есть в словаре!",
+    "delete_word_exist": "Такого \uD83C\uDDFA\uD83C\uDDF8 английского слова нет в словаре!",
+    "word_not_found": "Такого \uD83C\uDDFA\uD83C\uDDF8 английского слова нет в словаре \uD83D\uDE44"
   }
 }
