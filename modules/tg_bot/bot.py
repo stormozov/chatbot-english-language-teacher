@@ -1,8 +1,8 @@
 import random
 from telebot import types
-from modules.db.models import Word, TranslatedWord
+from modules.db.models import Word, TranslatedWord, UserWordSetting
 from modules.tg_bot.bot_config import CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
-from modules.tg_bot.db_operations import get_user_id, add_new_user
+from modules.tg_bot.db_operations import get_user_id
 from modules.tg_bot.menu import show_interaction_menu, show_word_variant_menu, show_one_item_menu
 from modules.tg_bot.word_management import handle_add_word_request, handle_delete_word_request
 from modules.tg_bot.bot_init import bot
@@ -26,13 +26,29 @@ def start_message(message: types.Message) -> None:
 @bot.message_handler(content_types=['text'])
 def handle_quiz_or_word_management(message: types.Message) -> None:
     """
-        A function that handles text messages from the user.
-        It generates answer choices for a quiz based on the user's text input.
+    Handles the quiz or word management functionality of the chatbot.
+
+    This function is triggered when the user sends a text message to the chatbot.
+    It checks the message text and performs the corresponding action:
+    - If the message text is 'test_knowledge' or 'next', it selects a random word from the database,
+      generates a menu with word variants, and sends it to the user.
+    - If the message text is 'add_word', it sends a message to the user to add a new word.
+    - If the message text is 'delete_word', it sends a message to the user to delete a word.
+
+    Parameters:
+        message (types.Message): The message object containing the user's input.
+
+    Returns:
+        None
     """
     if message.text == CHATBOT_BTNS['test_knowledge'] or message.text == CHATBOT_BTNS['next']:
         session = SESSION
+        user_id = get_user_id(session, message)
         words = session.query(Word).all()
-        word = random.choice(words)
+        visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
+            user_id=user_id, word_id=word.id, is_hidden=True
+        ).first()]
+        word = random.choice(visible_words)
         translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
         session.close()
 
