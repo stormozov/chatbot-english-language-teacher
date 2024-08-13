@@ -80,11 +80,15 @@ class UserWordSetting(Base):
         user_id (int): Foreign key reference to the User associated with this setting.
         word_id (int): Foreign key reference to the Word associated with this setting.
         is_hidden (bool): Indicates if the word setting is hidden.
+        correct_answers (int): The number of correct answers.
+        last_shown_at (datetime): The timestamp of the last time the word was shown.
     """
     __tablename__ = 'user_word_settings'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     word_id = Column(Integer, ForeignKey('words.id'))
     is_hidden = Column(Boolean, default=False)
+    correct_answers = Column(Integer, default=0)
+    last_shown_at = Column(DateTime, default=datetime.now)
     user = relationship("User", backref="user_word_settings")
     word = relationship("Word", backref="user_word_settings")

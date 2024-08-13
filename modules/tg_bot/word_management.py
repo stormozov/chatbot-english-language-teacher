@@ -1,6 +1,7 @@
 import re
 from typing import Union
 from telebot import types
+from modules.db.models import UserWordSetting
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.bot_config import SESSION, CHATBOT_BTNS, CHATBOT_ERRORS
 from modules.tg_bot.db_operations import (get_user_id, get_word_by_user_id, add_word_to_db, delete_word_from_db,
@@ -77,3 +78,7 @@ def handle_delete_word_request(message: types.Message) -> None:
 
     session.close()
     show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
+
+
+def should_hide_word(user_word_setting: UserWordSetting, correct_answers: int) -> bool:
+    return user_word_setting.correct_answers >= correct_answers

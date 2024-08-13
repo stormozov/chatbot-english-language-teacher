@@ -1,10 +1,11 @@
 import random
+from datetime import datetime
 from telebot import types
 from modules.db.models import Word, TranslatedWord, UserWordSetting
-from modules.tg_bot.bot_config import CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
-from modules.tg_bot.db_operations import get_user_id
+from modules.tg_bot.bot_config import CHATBOT_DATA, CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
+from modules.tg_bot.db_operations import get_user_id, check_user_in_db, add_new_user, inform_user_of_word_change
 from modules.tg_bot.menu import show_interaction_menu, show_word_variant_menu, show_one_item_menu
-from modules.tg_bot.word_management import handle_add_word_request, handle_delete_word_request
+from modules.tg_bot.word_management import handle_add_word_request, handle_delete_word_request, should_hide_word
 from modules.tg_bot.bot_init import bot
 
 
@@ -19,7 +20,8 @@ def start_message(message: types.Message) -> None:
 
     # Check if the user is already in the database
     session = SESSION
-    get_user_id(session, message)
+    if not check_user_in_db(session, message):
+        add_new_user(session, message)
     session.close()
 
 
@@ -48,10 +50,24 @@ def handle_quiz_or_word_management(message: types.Message) -> None:
         visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
             user_id=user_id, word_id=word.id, is_hidden=True
         ).first()]
-        word = random.choice(visible_words)
-        translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
-        session.close()
 
+        if not visible_words:
+            inform_user_of_word_change(message, 'learn_all_words')
+            return
+
+        word = random.choice(visible_words)
+        user_word_setting = session.query(UserWordSetting).filter_by(
+            user_id=user_id, word_id=word.id
+        ).first()
+
+        if user_word_setting is None:
+            user_word_setting = UserWordSetting(
+                user_id=user_id, word_id=word.id, correct_answers=0, is_hidden=False
+            )
+            session.add(user_word_setting)
+            session.commit()
+
+        translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
         markup, word_id = show_word_variant_menu(words, word)
 
         if translations:
@@ -63,9 +79,9 @@ def handle_quiz_or_word_management(message: types.Message) -> None:
             )
         else:
             # Handling the case when there are no transfers
-            bot.send_message(message.chat.id, 'Нет перевода для этого слова')
+            bot.send_message(message.chat.id, CHATBOT_MESSAGE['not_found_translated_word'])
 
-        bot.register_next_step_handler(message, validate_and_feedback_user_answer, word_id)
+        bot.register_next_step_handler(message, validate_and_feedback_user_answer, word_id, user_word_setting, user_id)
 
     if message.text == CHATBOT_BTNS['add_word']:
         bot.send_message(message.chat.id, CHATBOT_MESSAGE['add_user_word'])
@@ -75,18 +91,10 @@ def handle_quiz_or_word_management(message: types.Message) -> None:
         bot.register_next_step_handler(message, handle_delete_word_request)
 
 
-def validate_and_feedback_user_answer(message: types.Message, card: int) -> None:
-    """
-        Check the user's answer against the correct word and send a response message.
-
-        Parameters:
-            message (telegram.Message): The message object containing the user's answer.
-            card (int): The ID of the word card.
-    """
+def validate_and_feedback_user_answer(message: types.Message, card: int, user_word_setting, user_id) -> None:
     session = SESSION
     word = session.query(Word).get(card)
     translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
-    session.close()
 
     correct_word = word.word
 
@@ -94,14 +102,23 @@ def validate_and_feedback_user_answer(message: types.Message, card: int) -> None
         bot.send_message(message.chat.id, '✅')
         bot.send_message(
             message.chat.id,
-            f'Правильно!\nСлово 🇷🇺 {correct_word} переводится как 🇺🇸 {translations[0].translation}'
+            f'Правильно!\nСлово 🇺🇸 {correct_word} переводится как 🇷🇺 {translations[0].translation}'
         )
+        user_word_setting.correct_answers += 1
+        if should_hide_word(user_word_setting, CHATBOT_DATA['correct_answers']):
+            session.query(UserWordSetting).filter_by(
+                user_id=user_id, word_id=word.id
+            ).update({'is_hidden': True})
+            session.commit()
+            inform_user_of_word_change(message, 'remove', word.word)
+        else:
+            # Update the last shown at timestamp
+            user_word_setting.last_shown_at = datetime.now()
+            session.commit()
+        session.commit()
     else:
         bot.send_message(message.chat.id, '❌')
-        bot.send_message(
-            message.chat.id,
-            f'Неправильно.\nПравильный ответ: {correct_word}'
-        )
+        bot.send_message(message.chat.id, f'Неправильно.\nПравильный ответ: 🇺🇸 {correct_word}')
 
     show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
 

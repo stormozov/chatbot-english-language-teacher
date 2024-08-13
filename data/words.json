@@ -2,88 +2,28 @@
   "categories": {
     "colors": {
       "words": [
-        { "id": 1, "word": "red", "translation": "красный" },
-        { "id": 2, "word": "blue", "translation": "синий" },
-        { "id": 3, "word": "green", "translation": "зеленый" },
-        { "id": 4, "word": "yellow", "translation": "желтый" },
-        { "id": 5, "word": "orange", "translation": "оранжевый" },
-        { "id": 6, "word": "purple", "translation": "фиолетовый" },
-        { "id": 7, "word": "pink", "translation": "розовый" },
-        { "id": 8, "word": "black", "translation": "черный" },
-        { "id": 9, "word": "white", "translation": "белый" },
-        { "id": 10, "word": "gray", "translation": "серый" }
+        { "id": 1, "word": "Red", "translation": "Красный" },
+        { "id": 2, "word": "Blue", "translation": "Синий" },
+        { "id": 3, "word": "Green", "translation": "Зеленый" },
+        { "id": 4, "word": "Yellow", "translation": "Желтый" },
+        { "id": 5, "word": "Orange", "translation": "Оранжевый" },
+        { "id": 6, "word": "Purple", "translation": "Фиолетовый" },
+        { "id": 7, "word": "Pink", "translation": "Розовый" },
+        { "id": 8, "word": "Black", "translation": "Черный" },
+        { "id": 9, "word": "White", "translation": "Белый" },
+        { "id": 10, "word": "Gray", "translation": "Серый" }
       ]
     },
     "seasons": {
       "words": [
-        { "id": 11, "word": "spring", "translation": "весна" },
-        { "id": 12, "word": "summer", "translation": "лето" },
-        { "id": 13, "word": "autumn", "translation": "осень" },
-        { "id": 14, "word": "winter", "translation": "зима" }
+        { "id": 11, "word": "Spring", "translation": "Весна" },
+        { "id": 12, "word": "Summer", "translation": "Лето" },
+        { "id": 13, "word": "Autumn", "translation": "Осень" },
+        { "id": 14, "word": "Winter", "translation": "Зима" }
       ]
     },
-    "animals": {
-      "words": [
-        { "id": 15, "word": "dog", "translation": "собака" },
-        { "id": 16, "word": "cat", "translation": "кошка" },
-        { "id": 17, "word": "bird", "translation": "птица" },
-        { "id": 18, "word": "fish", "translation": "рыба" },
-        { "id": 19, "word": "elephant", "translation": "слон" },
-        { "id": 20, "word": "lion", "translation": "лев" },
-        { "id": 21, "word": "tiger", "translation": "тигр" },
-        { "id": 22, "word": "bear", "translation": "медведь" },
-        { "id": 23, "word": "monkey", "translation": "обезьяна" },
-        { "id": 24, "word": "wolf", "translation": "волк" }
-      ]
-    },
-    "family and friends": {
-      "words": [
-        { "id": 25, "word": "mother", "translation": "мать" },
-        { "id": 26, "word": "father", "translation": "отец" },
-        { "id": 27, "word": "brother", "translation": "брат" },
-        { "id": 28, "word": "sister", "translation": "сестра" },
-        { "id": 29, "word": "friend", "translation": "друг" },
-        { "id": 30, "word": "grandmother", "translation": "бабушка" },
-        { "id": 31, "word": "grandfather", "translation": "дедушка" },
-        { "id": 32, "word": "husband", "translation": "муж" },
-        { "id": 33, "word": "wife", "translation": "жена" },
-        { "id": 34, "word": "son", "translation": "сын" },
-        { "id": 35, "word": "daughter", "translation": "дочь" }
-      ]
-    },
-    "food and drinks": {
-      "words": [
-        { "id": 36, "word": "apple", "translation": "яблоко" },
-        { "id": 37, "word": "banana", "translation": "банан" },
-        { "id": 38, "word": "coffee", "translation": "кофе" },
-        { "id": 39, "word": "tea", "translation": "чай" },
-        { "id": 40, "word": "water", "translation": "вода" },
-        { "id": 41, "word": "bread", "translation": "хлеб" },
-        { "id": 42, "word": "milk", "translation": "молоко" },
-        { "id": 43, "word": "egg", "translation": "яйцо" },
-        { "id": 44, "word": "chicken", "translation": "курица" },
-        { "id": 45, "word": "pizza", "translation": "пицца" }
-      ]
-    },
-    "transport": {
-      "words": [
-        { "id": 46, "word": "car", "translation": "машина" },
-        { "id": 47, "word": "bus", "translation": "автобус" },
-        { "id": 48, "word": "train", "translation": "поезд" },
-        { "id": 49, "word": "plane", "translation": "самолет" },
-        { "id": 50, "word": "bike", "translation": "велосипед" },
-        { "id": 51, "word": "motorcycle", "translation": "мотоцикл" }
-      ]
-    },
-    "sport and fitness": {
-      "words": [
-        { "id": 52, "word": "football", "translation": "футбол" },
-        { "id": 53, "word": "basketball", "translation": "баскетбол" },
-        { "id": 54, "word": "tennis", "translation": "теннис" },
-        { "id": 55, "word": "gym", "translation": "спортзал" },
-        { "id": 56, "word": "yoga", "translation": "йога" },
-        { "id": 57, "word": "marathon", "translation": "марафон" }
-      ]
+    "custom": {
+      "words": []
     }
   }
 }
