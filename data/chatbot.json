@@ -5,7 +5,8 @@
     "help": "Бот поддерживает следующие команды:",
     "add_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово и его \uD83C\uDDF7\uD83C\uDDFA перевод через запятую (Например: 'English, Английский'):",
     "delete_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово для удаления:",
-    "not_found_translated_word": "Нет перевода для этого слова"
+    "not_found_translated_word": "Нет перевода для этого слова",
+    "learned_word": " было \uD83E\uDD78 изучено и скрыто из вашей выборки. Молодец!"
   },
   "buttons": {
     "test_knowledge": "Проверить знания",
@@ -21,5 +22,9 @@
     "word_not_found": "Такого \uD83C\uDDFA\uD83C\uDDF8 английского слова нет в словаре \uD83D\uDE44",
     "learn_all_words": "Вы уже изучили все английские слова \uD83C\uDDFA\uD83C\uDDF8, предложенные ботом \uD83D\uDE03"
   },
-  "correct_answers": 2
+  "correct_answers": 2,
+  "regex_patterns": {
+    "eng": "^[a-zA-Z- ]+$",
+    "rus": "^[а-яА-ЯёЁ\\s]+$"
+  }
 }

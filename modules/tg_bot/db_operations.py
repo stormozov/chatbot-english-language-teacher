@@ -3,7 +3,7 @@ from telebot import types
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from modules.db.models import UserWordSetting, User, Word, TranslatedWord
-from modules.tg_bot.bot_config import CHATBOT_ERRORS
+from modules.tg_bot.bot_config import CHATBOT_ERRORS, CHATBOT_MESSAGE, CHATBOT_DATA
 from modules.tg_bot.bot_init import bot
 
 
@@ -108,5 +108,6 @@ def inform_user_of_word_change(message: types.Message, action: str, word: Union[
         'remove': f'Слово "{word}" было скрыто из вашей выборки',
         'add_word_value': CHATBOT_ERRORS['add_word_value'],
         'learn_all_words': CHATBOT_ERRORS['learn_all_words'],
+        'learned_word': f'Слово "{word}"' + CHATBOT_MESSAGE['learned_word']
     }
     bot.send_message(message.chat.id, messages.get(action, 'Unknown action'))

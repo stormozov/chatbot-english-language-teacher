@@ -12,4 +12,5 @@ CHATBOT_DATA = read_file(path_to_json)
 CHATBOT_MESSAGE = CHATBOT_DATA['messages']
 CHATBOT_BTNS = CHATBOT_DATA['buttons']
 CHATBOT_ERRORS = CHATBOT_DATA['error']
+CHATBOT_REGEX = CHATBOT_DATA['regex_patterns']
 SESSION = create_db_session(DB)[0]

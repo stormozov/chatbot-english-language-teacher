@@ -3,7 +3,7 @@ from typing import Union
 from telebot import types
 from modules.db.models import UserWordSetting
 from modules.tg_bot.bot_init import bot
-from modules.tg_bot.bot_config import SESSION, CHATBOT_BTNS, CHATBOT_ERRORS
+from modules.tg_bot.bot_config import SESSION, CHATBOT_BTNS, CHATBOT_ERRORS, CHATBOT_REGEX
 from modules.tg_bot.db_operations import (get_user_id, get_word_by_user_id, add_word_to_db, delete_word_from_db,
                                           inform_user_of_word_change, remove_word_from_view, word_exists_in_db)
 from modules.tg_bot.menu import show_interaction_menu
@@ -15,12 +15,30 @@ def validate_user_input(message: types.Message) -> tuple[Union[str, None], Union
     if len(user_input) != 2:
         inform_user_of_word_change(message, 'add_word_value')
         return None, None
-    return user_input[0].strip().capitalize(), user_input[1].strip().capitalize()
+    return user_input[0].strip().title(), user_input[1].strip().title()
 
 
-def check_word_format(word: str, translation: str):
-    """Checks whether the user's input is a word in the correct format"""
-    return re.match(r'^[a-zA-Z]+$', word) and re.match(r'^[а-яА-ЯёЁ]+$', translation)
+def check_word_format(
+        english_pattern: str,
+        russian_pattern: str,
+        input_word: str,
+        input_translation: str
+) -> bool:
+    """
+    Checks if the input word and its translation match the given English and Russian patterns.
+
+    Args:
+        english_pattern (str): The regular expression pattern for the English word.
+        russian_pattern (str): The regular expression pattern for the Russian translation.
+        input_word (str): The input English word to check.
+        input_translation (str): The input Russian translation to check.
+
+    Returns:
+        bool: True if the input word and translation match the patterns, False otherwise.
+    """
+    english_regex = re.compile(r'^' + english_pattern + '$')
+    russian_regex = re.compile(r'^' + russian_pattern + '$')
+    return bool(english_regex.match(input_word) and russian_regex.match(input_translation))
 
 
 def handle_add_word_request(message: types.Message) -> None:
@@ -33,7 +51,10 @@ def handle_add_word_request(message: types.Message) -> None:
     if not word or not translation:
         return
 
-    if not check_word_format(word, translation):
+    if not check_word_format(
+            CHATBOT_REGEX['eng'], CHATBOT_REGEX['rus'],
+            word, translation
+    ):
         inform_user_of_word_change(message, 'add_word_value')
         return
 
@@ -81,4 +102,5 @@ def handle_delete_word_request(message: types.Message) -> None:
 
 
 def should_hide_word(user_word_setting: UserWordSetting, correct_answers: int) -> bool:
+    """Determines whether a word should be hidden based on the user's word setting and the number of correct answers."""
     return user_word_setting.correct_answers >= correct_answers
