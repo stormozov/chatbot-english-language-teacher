@@ -3,7 +3,7 @@ from telebot import types
 from modules.db.models import Word, TranslatedWord, UserWordSetting
 from modules.tg_bot.bot_config import CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
 from modules.tg_bot.db_operations import (get_user_id, check_user_in_db, add_new_user, inform_user_of_word_change)
-from modules.tg_bot.menu import show_word_variant_menu, show_one_item_menu
+from modules.tg_bot.menu import show_word_variant_menu, show_interaction_menu
 from modules.tg_bot.quiz_handling.quiz_handler import validate_and_feedback_user_answer
 from modules.tg_bot.word_management import handle_add_word_request, handle_delete_word_request
 from modules.tg_bot.bot_init import bot
@@ -13,10 +13,7 @@ from modules.tg_bot.bot_init import bot
 def start_message(message: types.Message) -> None:
     """ Start message handler """
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['start_message'])
-    show_one_item_menu(
-        message, CHATBOT_BTNS['test_knowledge'],
-        CHATBOT_MESSAGE['second_message']
-    )
+    show_interaction_menu(message, CHATBOT_BTNS, ['test_knowledge', 'add_word', 'delete_word'])
 
     # Check if the user is already in the database
     with SESSION as session:
@@ -24,30 +21,28 @@ def start_message(message: types.Message) -> None:
 
 
 def handle_new_user(session, message):
-    if not check_user_in_db(session, message):
-        add_new_user(session, message)
+    """Handles a new user by checking if they already exist in the database. If they don't, the system adds them."""
+    try:
+        with session.begin():
+            check_user_in_db(session, message) or add_new_user(session, message)
+    except Exception as e:
+        print(e)
 
 
-@bot.message_handler(content_types=['text'])
-def handle_quiz_or_word_management(message: types.Message) -> None:
-    """
-    Handles the quiz or word management functionality of the chatbot.
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback_query(call: types.CallbackQuery) -> None:
+    """Handles the callback query from the bot."""
+    if call.data in ('test_knowledge', 'next'):
+        handle_quiz(call.message)
+    elif call.data == 'add_word':
+        handle_add_word(call.message)
+    elif call.data == 'delete_word':
+        handle_delete_word(call.message)
 
-    This function is triggered when the user sends a text message to the chatbot.
-    It checks the message text and performs the corresponding action:
-    - If the message text is 'test_knowledge' or 'next', it selects a random word from the database,
-      generates a menu with word variants, and sends it to the user.
-    - If the message text is 'add_word', it sends a message to the user to add a new word.
-    - If the message text is 'delete_word', it sends a message to the user to delete a word.
 
-    Parameters:
-        message (types.Message): The message object containing the user's input.
-
-    Returns:
-        None
-    """
-    if message.text == CHATBOT_BTNS['test_knowledge'] or message.text == CHATBOT_BTNS['next']:
-        session = SESSION
+@bot.message_handler(commands=['test_knowledge', 'next'])
+def handle_quiz(message: types.Message) -> None:
+    with SESSION as session:
         user_id = get_user_id(session, message)
         words = session.query(Word).all()
         visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
@@ -89,12 +84,17 @@ def handle_quiz_or_word_management(message: types.Message) -> None:
             user_word_setting, word, translations
         )
 
-    if message.text == CHATBOT_BTNS['add_word']:
-        bot.send_message(message.chat.id, CHATBOT_MESSAGE['add_user_word'])
-        bot.register_next_step_handler(message, handle_add_word_request)
-    elif message.text == CHATBOT_BTNS['delete_word']:
-        bot.send_message(message.chat.id, CHATBOT_MESSAGE['delete_user_word'])
-        bot.register_next_step_handler(message, handle_delete_word_request)
+
+@bot.message_handler(commands=['add_word'])
+def handle_add_word(message: types.Message) -> None:
+    bot.send_message(message.chat.id, CHATBOT_MESSAGE['add_user_word'])
+    bot.register_next_step_handler(message, handle_add_word_request)
+
+
+@bot.message_handler(commands=['delete_word'])
+def handle_delete_word(message: types.Message) -> None:
+    bot.send_message(message.chat.id, CHATBOT_MESSAGE['delete_user_word'])
+    bot.register_next_step_handler(message, handle_delete_word_request)
 
 
 def start_bot() -> None:
