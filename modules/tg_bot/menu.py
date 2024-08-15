@@ -4,14 +4,21 @@ from modules.db.models import Word
 from modules.tg_bot.bot_init import bot
 
 
-def show_interaction_menu(message: types.Message, button_labels: dict[str, str], action_callbacks: list[str]) -> None:
+def show_interaction_menu(
+        message: types.Message,
+        button_labels: dict[str, str],
+        action_callbacks: list[str]
+) -> None:
     """
-    Renders an interaction menu for the user with the provided buttons and actions.
+    Renders an interaction menu for the user with the provided buttons and
+    actions.
 
     Parameters:
         message (types.Message): The message object from the user.
-        button_labels (dict): A dictionary of button names and their corresponding labels.
-        action_callbacks (list): A list of action names to associate with buttons.
+        button_labels (dict): A dictionary of button names
+        and their corresponding labels.
+        action_callbacks (list): A list of action names
+        to associate with buttons.
     """
     markup = types.InlineKeyboardMarkup(row_width=2)
 
@@ -27,10 +34,16 @@ def show_interaction_menu(message: types.Message, button_labels: dict[str, str],
                 )
         markup.add(*row)
 
-    bot.send_message(message.chat.id, 'Выберите действие:', reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        'Выберите действие:',
+        reply_markup=markup
+    )
 
 
-def show_word_variant_menu(word_list: list, target_word: Word) -> tuple[types.ReplyKeyboardMarkup, int]:
+def show_word_variant_menu(
+        word_list: list, target_word: Word
+) -> types.ReplyKeyboardMarkup:
     """
     Generate answer choices for a quiz based on the user's text input.
 
@@ -42,12 +55,24 @@ def show_word_variant_menu(word_list: list, target_word: Word) -> tuple[types.Re
         tuple: A tuple containing the keyboard markup and the ID of the word.
     """
     # Generate answer options
-    other_words = [option.word for option in word_list if option.word != target_word.word]
-    answer_options = random.sample(other_words, min(3, len(other_words)))
-    answer_options.insert(random.randint(0, len(answer_options)), target_word.word)
+    other_words: list[str] = [
+        option.word
+        for option in word_list
+        if option.word != target_word.word
+    ]
+    answer_options: list[str] = random.sample(
+        other_words, min(3, len(other_words))
+    )
+    answer_options.insert(
+        random.randint(0, len(answer_options)),
+        target_word.word
+    )
 
     # Create the keyboard layout
-    keyboard_markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    keyboard_markup.add(*[types.KeyboardButton(option) for option in answer_options])
+    keyboard_markup = types.ReplyKeyboardMarkup(
+        row_width=2, resize_keyboard=True
+    )
+    options_markup = [types.KeyboardButton(option) for option in answer_options]
+    keyboard_markup.add(*options_markup)
 
-    return keyboard_markup, target_word.id
+    return keyboard_markup
