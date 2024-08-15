@@ -1,4 +1,5 @@
 import random
+from sqlalchemy import or_
 from telebot import types
 from modules.db.models import Word, TranslatedWord, UserWordSetting
 from modules.tg_bot.bot_config import CHATBOT_MESSAGE, CHATBOT_BTNS, SESSION
@@ -44,7 +45,9 @@ def handle_callback_query(call: types.CallbackQuery) -> None:
 def handle_quiz(message: types.Message) -> None:
     session = SESSION
     user_id = get_user_id(session, message)
-    words = session.query(Word).all()
+    words = session.query(Word).filter(
+        or_(Word.user_id.is_(None), Word.user_id == user_id)
+    ).all()
     visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
         user_id=user_id, word_id=word.id, is_hidden=True
     ).first()]
