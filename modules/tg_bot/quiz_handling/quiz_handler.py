@@ -15,22 +15,22 @@ def validate_and_feedback_user_answer(
     translations: list
 ) -> None:
     """Validates user's response and provides feedback based on its accuracy."""
-    with SESSION() as session:
-        correct_answer = selected_word.word
-        is_correct = message.text == correct_answer
+    session = SESSION
+    correct_answer = selected_word.word
+    is_correct = message.text == correct_answer
 
-        send_feedback_message(message, is_correct, correct_answer, translations)
+    send_feedback_message(message, is_correct, correct_answer, translations)
 
-        if is_correct:
-            update_user_word_setting(user_word_setting)
-            if user_word_setting.is_hidden:
-                inform_user_of_word_change(message, 'learned_word', correct_answer)
+    if is_correct:
+        update_user_word_setting(user_word_setting)
+        if user_word_setting.is_hidden:
+            inform_user_of_word_change(message, 'learned_word', correct_answer)
 
-        session.add(user_word_setting)
-        session.commit()
+    session.add(user_word_setting)
+    session.commit()
 
-        bot.send_message(message.chat.id, 'Продолжим?', reply_markup=types.ReplyKeyboardRemove())
-        show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
+    bot.send_message(message.chat.id, 'Продолжим?', reply_markup=types.ReplyKeyboardRemove())
+    show_interaction_menu(message, CHATBOT_BTNS, ['next', 'add_word', 'delete_word'])
 
 
 def get_feedback_message(is_correct: bool, correct_answer: str, translations: list) -> str:

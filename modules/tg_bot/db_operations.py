@@ -11,18 +11,16 @@ def check_user_in_db(session: SESSION, message: types.Message) -> User | None:
     return session.query(User).filter_by(tg_id=message.chat.id).first()
 
 
-def get_user_id(session: SESSION, message: types.Message) -> int:
-    """Retrieves the user ID from the database based on the provided message."""
+def get_user_id(session: SESSION, message: types.Message) -> int | None:
+    """Retrieve the user ID from the database based on the provided message."""
     user = check_user_in_db(session, message)
-    if user:
-        return user.id
+    return user.id if user else None
 
 
 def add_new_user(session: SESSION, message: types.Message) -> None:
     """Add a new user to the database"""
     new_user = User(tg_id=message.from_user.id, username=message.from_user.username)
     session.merge(new_user)
-    session.commit()
 
 
 def word_exists_in_db(session: SESSION, word: str) -> Word | None:

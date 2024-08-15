@@ -20,7 +20,7 @@ def start_message(message: types.Message) -> None:
         handle_new_user(session, message)
 
 
-def handle_new_user(session, message):
+def handle_new_user(session: SESSION, message: types.Message) -> None:
     """Handles a new user by checking if they already exist in the database. If they don't, the system adds them."""
     try:
         with session.begin():
@@ -42,47 +42,47 @@ def handle_callback_query(call: types.CallbackQuery) -> None:
 
 @bot.message_handler(commands=['test_knowledge', 'next'])
 def handle_quiz(message: types.Message) -> None:
-    with SESSION as session:
-        user_id = get_user_id(session, message)
-        words = session.query(Word).all()
-        visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
-            user_id=user_id, word_id=word.id, is_hidden=True
-        ).first()]
+    session = SESSION
+    user_id = get_user_id(session, message)
+    words = session.query(Word).all()
+    visible_words = [word for word in words if not session.query(UserWordSetting).filter_by(
+        user_id=user_id, word_id=word.id, is_hidden=True
+    ).first()]
 
-        if not visible_words:
-            inform_user_of_word_change(message, 'learn_all_words')
-            return
+    if not visible_words:
+        inform_user_of_word_change(message, 'learn_all_words')
+        return
 
-        word = random.choice(visible_words)
-        user_word_setting = session.query(UserWordSetting).filter_by(
-            user_id=user_id, word_id=word.id
-        ).first()
+    word = random.choice(visible_words)
+    user_word_setting = session.query(UserWordSetting).filter_by(
+        user_id=user_id, word_id=word.id
+    ).first()
 
-        if user_word_setting is None:
-            user_word_setting = UserWordSetting(
-                user_id=user_id, word_id=word.id, correct_answers=0, is_hidden=False
-            )
-            session.add(user_word_setting)
-            session.commit()
-
-        translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
-        markup, word_id = show_word_variant_menu(words, word)
-
-        if translations:
-            russian_word = translations[0].translation
-            bot.send_message(
-                message.chat.id,
-                f'Выбери перевод слова:\n🇷🇺 {russian_word}',
-                reply_markup=markup
-            )
-        else:
-            # Handling the case when there are no transfers
-            bot.send_message(message.chat.id, CHATBOT_MESSAGE['not_found_translated_word'])
-
-        bot.register_next_step_handler(
-            message, validate_and_feedback_user_answer,
-            user_word_setting, word, translations
+    if user_word_setting is None:
+        user_word_setting = UserWordSetting(
+            user_id=user_id, word_id=word.id, correct_answers=0, is_hidden=False
         )
+        session.add(user_word_setting)
+        session.commit()
+
+    translations = session.query(TranslatedWord).filter_by(word_id=word.id).all()
+    markup, word_id = show_word_variant_menu(words, word)
+
+    if translations:
+        russian_word = translations[0].translation
+        bot.send_message(
+            message.chat.id,
+            f'Выбери перевод слова:\n🇷🇺 {russian_word}',
+            reply_markup=markup
+        )
+    else:
+        # Handling the case when there are no transfers
+        bot.send_message(message.chat.id, CHATBOT_MESSAGE['not_found_translated_word'])
+
+    bot.register_next_step_handler(
+        message, validate_and_feedback_user_answer,
+        user_word_setting, word, translations
+    )
 
 
 @bot.message_handler(commands=['add_word'])

@@ -42,7 +42,7 @@ def check_word_format(
 
 def handle_add_word_request(message: types.Message) -> None:
     """Handles the request to add a new word to the user's word list."""
-    with SESSION() as session:
+    with SESSION as session:
         user_id = get_user_id(session, message)
 
         word, translation = validate_user_input(message)
@@ -89,7 +89,7 @@ def handle_word_in_user_db(session: SESSION, word_in_user_db: Word, message: typ
 
 def handle_delete_word_request(message: types.Message) -> None:
     """Handles the request to delete a word from the user's word list."""
-    with SESSION() as session:
+    with SESSION as session:
         user_id = get_user_id(session, message)
         word = message.text.lower()
 
