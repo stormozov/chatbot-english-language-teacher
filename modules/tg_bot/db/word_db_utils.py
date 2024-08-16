@@ -1,29 +1,9 @@
 from telebot import types
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from modules.db.models import UserWordSetting, User, Word, TranslatedWord
-from modules.tg_bot.bot_config import CHATBOT_ERRORS, CHATBOT_MESSAGE, SESSION
+from modules.db.models import UserWordSetting, Word, TranslatedWord
+from modules.tg_bot.bot_config import SESSION
 from modules.tg_bot.bot_init import bot
-
-
-def check_user_in_db(session: SESSION, message: types.Message) -> User | None:
-    """Checks if the user is already in the database"""
-    return session.query(User).filter_by(tg_id=message.chat.id).first()
-
-
-def get_user_id(session: SESSION, message: types.Message) -> int | None:
-    """Retrieve the user ID from the database based on the provided message."""
-    user: User = check_user_in_db(session, message)
-    return user.id if user else None
-
-
-def add_new_user(session: SESSION, message: types.Message) -> None:
-    """Add a new user to the database"""
-    new_user: User = User(
-        tg_id=message.chat.id,
-        username=message.chat.username
-    )
-    session.merge(new_user)
 
 
 def word_exists_in_db(session: SESSION, word: str) -> Word | None:
@@ -128,26 +108,9 @@ def remove_word_from_view(session: SESSION, user_id: int, word: str) -> None:
     if existing_setting:
         existing_setting.is_hidden = True
     else:
-        remove: UserWordSetting = UserWordSetting(
+        hidden_setting: UserWordSetting = UserWordSetting(
             user_id=user_id, word_id=word_id, is_hidden=True
         )
-        session.add(remove)
+        session.add(hidden_setting)
 
     session.commit()
-
-
-def inform_user_of_word_change(
-        message: types.Message,
-        action: str,
-        word: str | None = None
-) -> None:
-    """Inform the user of the change in the dictionary"""
-    messages = {
-        'add': f'Слово "{word}" и его перевод добавлены успешно!',
-        'delete': f'Слово "{word}" и его переводы удалены успешно!',
-        'remove': f'Слово "{word}" было скрыто из вашей выборки',
-        'add_word_value': CHATBOT_ERRORS['add_word_value'],
-        'learn_all_words': CHATBOT_ERRORS['learn_all_words'],
-        'learned_word': f'Слово "{word}"' + CHATBOT_MESSAGE['learned_word']
-    }
-    bot.send_message(message.chat.id, messages.get(action, 'Unknown action'))

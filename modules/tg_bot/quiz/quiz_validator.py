@@ -1,11 +1,12 @@
 from datetime import datetime
+
 from telebot import types
+
 from modules.db.models import UserWordSetting, Word
-from modules.tg_bot.bot_config import SESSION, CHATBOT_BTNS, CHATBOT_DATA
+from modules.tg_bot.bot_config import CHATBOT_BTNS, CHATBOT_DATA, SESSION
 from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db_operations import inform_user_of_word_change
-from modules.tg_bot.menu import show_interaction_menu
-from modules.tg_bot.word_management import should_hide_word
+from modules.tg_bot.response_handlers import inform_user_of_word_change
+from modules.tg_bot.ui.nav_menu import show_interaction_menu
 
 
 def validate_and_feedback_user_answer(
@@ -14,7 +15,18 @@ def validate_and_feedback_user_answer(
     selected_word: Word,
     translations: list
 ) -> None:
-    """Validates user's response and provides feedback based on its accuracy."""
+    """Validates user's response and provides feedback based on its accuracy.
+
+    Args:
+        message (types.Message): The user's message to be validated.
+        user_word_setting (UserWordSetting): The user's word setting.
+        selected_word (Word): Selected word to be checked against
+            the user's response.
+        translations (list): A list of translations for the selected word.
+
+    Returns:
+        None
+    """
     session = SESSION
     correct_answer: str = selected_word.word
     is_correct: bool = message.text == correct_answer
@@ -31,7 +43,7 @@ def validate_and_feedback_user_answer(
         if user_word_setting.is_hidden:
             inform_user_of_word_change(
                 message, 'learned_word', correct_answer
-            )
+                )
 
     session.add(user_word_setting)
     session.commit()
@@ -45,7 +57,7 @@ def validate_and_feedback_user_answer(
         message,
         CHATBOT_BTNS,
         ['next', 'add_word', 'delete_word']
-    )
+        )
 
 
 def get_feedback_message(
@@ -74,6 +86,20 @@ def send_feedback_message(
     result_icon: str = '✅' if is_answer_correct else '❌'
     bot.send_message(user_message.chat.id, result_icon)
     bot.send_message(user_message.chat.id, feedback_text)
+
+
+def should_hide_word(
+        user_word_setting: UserWordSetting, correct_answers: int
+) -> bool:
+    """Checks if a word should be hidden from the user.
+
+    Determines whether a word should be hidden from the user based on
+    its status and the user's preferences.
+
+    Returns:
+        bool: True if the word should be hidden, False otherwise.
+    """
+    return user_word_setting.correct_answers >= correct_answers
 
 
 def update_user_word_setting(user_word_setting: UserWordSetting) -> None:
