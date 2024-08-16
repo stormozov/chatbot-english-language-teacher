@@ -1,5 +1,5 @@
-from modules.read_file.read_file import read_file
-from ..db.models import Category, Word, TranslatedWord
+from modules.fs_tools.read_file import read_file
+from modules.db.models import Category, Word, TranslatedWord
 
 
 def get_existing_objects(session) -> tuple:
