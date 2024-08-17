@@ -29,7 +29,6 @@ def handle_add_word_request(user_message: types.Message) -> None:
     """Handles the request to add a new word to the user's word list."""
     with SESSION as session:
         user_id: int = get_user_id(session, user_message)
-
         word, translation = validate_user_input(user_message)
 
         if not word or not translation:

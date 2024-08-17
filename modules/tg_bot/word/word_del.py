@@ -34,7 +34,7 @@ def handle_delete_word_request(user_message: types.Message) -> None:
     """
     with SESSION as session:
         user_id: int = get_user_id(session, user_message)
-        word_to_delete: str = user_message.text.lower()
+        word_to_delete: str = user_message.text.title()
 
         word_in_user_db: Word = get_word_by_user_id(
             session,
@@ -45,7 +45,7 @@ def handle_delete_word_request(user_message: types.Message) -> None:
             handle_word_not_in_user_db(
                 session, user_id,
                 word_to_delete, user_message
-                )
+            )
         else:
             handle_word_in_user_db(
                 session,
@@ -53,7 +53,6 @@ def handle_delete_word_request(user_message: types.Message) -> None:
                 user_message
             )
 
-        session.close()
         show_interaction_menu(
             user_message,
             CHATBOT_BTNS,
@@ -71,11 +70,11 @@ def handle_word_not_in_user_db(
     if not word_exists_in_db(session, word):
         bot.send_message(user_message.chat.id, CHATBOT_ERRORS['word_not_found'])
         return
-    with session.begin():
-        remove_word_from_view(session, user_id, word)
-        inform_user_of_word_change(
-            user_message, 'remove', word
-        )
+
+    remove_word_from_view(session, user_id, word)
+    inform_user_of_word_change(
+        user_message, 'remove', word
+    )
 
 
 def handle_word_in_user_db(
