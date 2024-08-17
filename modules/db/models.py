@@ -42,7 +42,8 @@ class Word(Base):
     Attributes:
         id (int): The primary key for the Word.
         word (str): The actual word.
-        category_id (int): Foreign key reference to the Category this word belongs to.
+        category_id (int): Foreign key reference to the Category this word
+        belongs to.
         user_id (int): Foreign key reference to the User who added this word.
     """
     __tablename__ = 'words'
@@ -59,9 +60,11 @@ class TranslatedWord(Base):
 
     Attributes:
         id (int): The primary key for the TranslatedWord.
-        word_id (int): Foreign key reference to the Word this translation belongs to.
+        word_id (int): Foreign key reference to the Word this translation
+        belongs to.
         translation (str): The translated word.
-        user_id (int): Foreign key reference to the User who added this translation.
+        user_id (int): Foreign key reference to the User who added this
+        translation.
     """
     __tablename__ = 'translated_words'
     id = Column(Integer, primary_key=True)
@@ -77,11 +80,14 @@ class UserWordSetting(Base):
 
     Attributes:
         id (int): The primary key for the UserWordSetting.
-        user_id (int): Foreign key reference to the User associated with this setting.
-        word_id (int): Foreign key reference to the Word associated with this setting.
+        user_id (int): Foreign key reference to the User associated
+        with this setting.
+        word_id (int): Foreign key reference to the Word associated
+        with this setting.
         is_hidden (bool): Indicates if the word setting is hidden.
         correct_answers (int): The number of correct answers.
-        last_shown_at (datetime): The timestamp of the last time the word was shown.
+        last_shown_at (datetime): The timestamp of the last time
+        the word was shown.
     """
     __tablename__ = 'user_word_settings'
     id = Column(Integer, primary_key=True)

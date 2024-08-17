@@ -1,9 +1,8 @@
 import os
 
 
-def get_absolute_path(path_parts: list[str]) -> str:
-	"""Creates absolute path from path parts."""
-	file_path = os.path.join(*path_parts)
-	absolute_file_path = os.path.abspath(file_path)
+def get_absolute_path(path_segments: list[str]) -> str:
+    """Returns an absolute path from a list of path segments."""
+    file_path = os.path.join(*path_segments)
 
-	return absolute_file_path
+    return os.path.abspath(file_path)
