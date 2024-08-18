@@ -1,12 +1,15 @@
 import random
 
-from sqlalchemy import or_
 from telebot import types
 
 from modules.db.models import Word, TranslatedWord, UserWordSetting
 from modules.tg_bot.bot_config import CHATBOT_MESSAGE, SESSION
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.user_db_utils import get_user_id
+from modules.tg_bot.db.word_db_utils import (
+    get_all_translations_word, get_all_user_words,
+    get_hidden_word_settings, get_user_word_setting
+)
 from modules.tg_bot.quiz.quiz_validator import validate_and_feedback_user_answer
 from modules.tg_bot.ui.quiz_menu import show_word_variant_menu
 from modules.tg_bot.response_handlers import inform_user_of_word_change
@@ -16,79 +19,135 @@ from modules.tg_bot.response_handlers import inform_user_of_word_change
 def handle_quiz(message: types.Message) -> None:
     """Handles the 'test_knowledge' and 'next' commands.
 
-    Retrieves a list of words from the database based on the user's ID,
-    filters out hidden words, and randomly selects a word for the user to
-    translate. If the word has translations, it sends a message to the user
-    with the translation options; otherwise, it sends a message indicating
-    that no translations were found.
+    This function is responsible for testing the user's knowledge of words.
+    It selects a random word from the list of visible words for the user,
+    sends the word's translation to the user, and registers a callback
+    to handle the user's response.
 
     Args:
-        message (types.Message): The user's message that triggered this function
+        message (types.Message): The message that triggered this function.
 
     Returns:
         None
     """
     session = SESSION
     user_id: int = get_user_id(session, message)
-    user_id_condition = or_(Word.user_id.is_(None), Word.user_id == user_id)
-    words: list = session.query(Word).filter(user_id_condition).all()
-    hidden_word_settings: list = (
-        session
-        .query(UserWordSetting)
-        .filter_by(user_id=user_id, is_hidden=True)
+    all_user_words: list = get_all_user_words(session, user_id)
+    visible_words: list[Word] = get_visible_words(
+        session, user_id, all_user_words
     )
-
-    hidden_word_ids: list[int] = [
-        setting.word_id
-        for setting in hidden_word_settings
-    ]
-
-    visible_words: list[Word] = [
-        word
-        for word in words
-        if word.id not in hidden_word_ids
-    ]
 
     if not visible_words:
         inform_user_of_word_change(message, 'learn_all_words')
         return
 
-    word: Word = random.choice(visible_words)
-    user_word_setting: UserWordSetting = (
-        session
-        .query(UserWordSetting)
-        .filter_by(user_id=user_id, word_id=word.id)
-        .first()
+    target_word: Word = get_random_word(visible_words)
+    user_word_setting = get_user_word_setting(
+        session, user_id, target_word.id
     )
-
-    if user_word_setting is None:
-        user_word_setting: UserWordSetting = UserWordSetting(
-            user_id=user_id, word_id=word.id,
-            correct_answers=0, is_hidden=False
+    translations: list[TranslatedWord] = get_all_translations_word(
+        session, target_word.id
         )
-        session.add(user_word_setting)
-        session.commit()
 
-    translations: list[TranslatedWord] = (
-        session
-        .query(TranslatedWord)
-        .filter_by(word_id=word.id)
-        .all()
+    send_message_to_user(
+        message, translations[0].translation,
+        all_user_words, target_word
+        )
+    register_validation_step(
+        message,
+        user_word_setting,
+        target_word,
+        translations
     )
 
-    if translations:
-        russian_word: str = translations[0].translation
+
+def get_random_word(visible_words: list[Word]) -> Word:
+    """Selects a random word from a list of visible words.
+
+    Args:
+        visible_words (list[Word]): A list of visible words.
+
+    Returns:
+        Word: A random word from the list of visible words.
+    """
+    return random.choice(visible_words)
+
+
+def get_visible_words(session: SESSION, user_id: int, user_words: list[Word]) \
+        -> list[Word]:
+    """Retrieves a list of visible words for a specific user.
+
+    Parameters:
+        session (SESSION): The database session.
+        user_id (int): The ID of the user.
+        user_words (list[Word]): The list of user words.
+
+    Returns:
+        list[Word]: A list of visible words for the user.
+    """
+    hidden_settings: list = get_hidden_word_settings(session, user_id)
+    hidden_word_ids: list[int] = [
+        setting.word_id
+        for setting in hidden_settings
+    ]
+
+    return [word for word in user_words if word.id not in hidden_word_ids]
+
+
+def send_message_to_user(
+        message: types.Message, translation_word: str,
+        user_words: list[Word], target_word: Word
+):
+    """Sends a message to the user with the word's translation.
+
+    This function sends a message to the user with the translation of the
+    target word. If the translation is available, it also includes a menu
+    with word variants. If the translation is not available, it sends a
+    corresponding error message.
+
+    Args:
+        message (types.Message): The message that triggered this function.
+        translation_word (str): The translation of the target word.
+        user_words (list[Word]): The list of words for the user.
+        target_word (Word): The target word being tested.
+
+    Returns:
+        None
+    """
+    if translation_word:
+        markup: types.ReplyKeyboardMarkup = show_word_variant_menu(
+            user_words, target_word
+        )
         bot.send_message(
             message.chat.id,
-            f'Выбери перевод слова:\n🇷🇺 {russian_word}',
-            reply_markup=show_word_variant_menu(words, word)
+            f'Выбери перевод слова:\n {translation_word}',
+            reply_markup=markup
         )
     else:
-        # Handling the case when there are no transfers
         bot.send_message(
             message.chat.id, CHATBOT_MESSAGE['not_found_translated_word']
         )
 
+
+def register_validation_step(
+        message: types.Message, user_word_setting: UserWordSetting,
+        word: Word, translations: list[TranslatedWord]
+):
+    """Registers the next step handler for the user's response.
+
+    This function registers a callback to handle the user's response
+    to the word's translation. It uses the provided user word setting,
+    word, and translations to determine the correct response.
+
+    Args:
+        message (types.Message): The message that triggered this function.
+        user_word_setting (UserWordSetting): The user's word setting.
+        word (Word): The word being tested.
+        translations (list[TranslatedWord]): The word's translations list.
+
+    Returns:
+        None
+    """
     bot.register_next_step_handler(
         message,
         validate_and_feedback_user_answer,

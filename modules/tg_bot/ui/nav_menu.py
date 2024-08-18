@@ -30,7 +30,5 @@ def show_interaction_menu(
         markup.add(*row)
 
     bot.send_message(
-        user_message.chat.id,
-        'Выберите действие:',
-        reply_markup=markup
+        user_message.chat.id, 'Выберите действие:', reply_markup=markup
     )

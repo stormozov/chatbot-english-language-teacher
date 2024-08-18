@@ -1,9 +1,6 @@
-from telebot import types
-from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
-from modules.db.models import UserWordSetting, Word, TranslatedWord
+from sqlalchemy import func, or_
+from modules.db.models import TranslatedWord, UserWordSetting, Word
 from modules.tg_bot.bot_config import SESSION
-from modules.tg_bot.bot_init import bot
 
 
 def word_exists_in_db(session: SESSION, word: str) -> Word | None:
@@ -40,77 +37,95 @@ def get_word_by_user_id(
     return session.query(Word).filter(*filter_condition).first()
 
 
-def add_word_to_db(
-        session: SESSION,
-        word: str,
-        user_id: int,
-        translation: str,
-        message: types.Message
-) -> None:
-    """Add a word to the database"""
-    try:
-        word_obj: Word = Word(word=word, user_id=user_id, category_id=3)
-        translated_word_obj: TranslatedWord = TranslatedWord(
-            word=word_obj,
-            translation=translation,
-            user_id=user_id
-        )
-        user_word_setting_obj: UserWordSetting = UserWordSetting(
-            user_id=user_id, word=word_obj
-        )
+def get_all_user_words(session: SESSION, user_id: int) -> list[Word]:
+    """Retrieves all words for a specific user.
 
-        session.add_all([word_obj, translated_word_obj, user_word_setting_obj])
-        session.commit()
-    except IntegrityError:
-        session.rollback()
-        bot.send_message(
-            message.chat.id,
-            f'Слово {word} уже добавлено в вашем словаре.'
-        )
+    This function queries the database to retrieve all words that are
+    assigned to a given user or have no user assigned.
+
+    Args:
+        session (SESSION): The database session.
+        user_id (int): The ID of the user.
+
+    Returns:
+        list[Word]: A list of words for the user.
+    """
+    user_id_condition = or_(Word.user_id.is_(None), Word.user_id == user_id)
+
+    return session.query(Word).filter(user_id_condition).all()
 
 
-def delete_word_from_db(session: SESSION, word_obj: Word) -> None:
-    """Delete a word from the database"""
-    translated_words: list = (
-        session
-        .query(TranslatedWord)
-        .filter_by(word_id=word_obj.id)
-        .all()
-    )
+def get_hidden_word_settings(session: SESSION, user_id: int) \
+        -> list[UserWordSetting]:
+    """Retrieves the hidden word settings for a specific user.
 
-    user_word_setting_obj: UserWordSetting = (
+    This function queries the database to retrieve the word settings that are
+    marked as hidden for a given user.
+
+    Args:
+        session (SESSION): The database session.
+        user_id (int): The ID of the user.
+
+    Returns:
+        list[UserWordSetting]: A list of hidden word settings for the user.
+    """
+    return (
         session
         .query(UserWordSetting)
-        .filter_by(word_id=word_obj.id)
-        .first()
+        .filter_by(user_id=user_id, is_hidden=True)
     )
 
-    for translated_word in translated_words:
-        session.delete(translated_word)
 
-    if user_word_setting_obj:
-        session.delete(user_word_setting_obj)
+def get_user_word_setting(session: SESSION, user_id: int, word_id: int) \
+        -> UserWordSetting:
+    """Retrieves or creates the user's word setting.
 
-    session.delete(word_obj)
-    session.commit()
+    This function retrieves the user's word setting for a given word.
+    If the setting does not exist, it creates a new one with default values.
 
+    Args:
+        session (SESSION): The database session.
+        user_id (int): The ID of the user.
+        word_id (int): The ID of the word.
 
-def remove_word_from_view(session: SESSION, user_id: int, word: str) -> None:
-    """Remove a word from the view"""
-    word_id: int = word_exists_in_db(session, word).id
-    existing_setting: UserWordSetting = (
+    Returns:
+        UserWordSetting: The user's word setting.
+    """
+    user_word_setting: UserWordSetting = (
         session
         .query(UserWordSetting)
         .filter_by(user_id=user_id, word_id=word_id)
         .first()
     )
 
-    if existing_setting:
-        existing_setting.is_hidden = True
-    else:
-        hidden_setting: UserWordSetting = UserWordSetting(
-            user_id=user_id, word_id=word_id, is_hidden=True
+    if user_word_setting is None:
+        user_word_setting = UserWordSetting(
+            user_id=user_id, word_id=word_id,
+            correct_answers=0, is_hidden=False
         )
-        session.add(hidden_setting)
+        session.add(user_word_setting)
+        session.commit()
 
-    session.commit()
+    return user_word_setting
+
+
+def get_all_translations_word(session: SESSION, word_id: int) \
+        -> list[TranslatedWord]:
+    """Retrieves the translations for a given word.
+
+    This function queries the database to retrieve the translations for a word
+    with the specified ID.
+
+    Args:
+        session (SESSION): The database session.
+        word_id (int): The ID of the word.
+
+    Returns:
+        list[TranslatedWord]: A list of translations for the word.
+    """
+    return (
+        session
+        .query(TranslatedWord)
+        .filter_by(word_id=word_id)
+        .all()
+    )

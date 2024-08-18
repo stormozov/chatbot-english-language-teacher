@@ -5,11 +5,11 @@ from modules.tg_bot.bot_config import (
     CHATBOT_BTNS, CHATBOT_ERRORS, CHATBOT_MESSAGE, SESSION
 )
 from modules.tg_bot.bot_init import bot
+from modules.tg_bot.db.word_db_crud import (
+    delete_word_from_db, remove_word_from_view
+)
 from modules.tg_bot.db.word_db_utils import (
-    delete_word_from_db,
-    get_word_by_user_id,
-    remove_word_from_view,
-    word_exists_in_db
+    get_word_by_user_id, word_exists_in_db
 )
 from modules.tg_bot.db.user_db_utils import get_user_id
 from modules.tg_bot.response_handlers import inform_user_of_word_change
