@@ -1,6 +1,9 @@
 from telebot import types
 
-from modules.tg_bot.bot_config import CHATBOT_BTNS, CHATBOT_MESSAGE, SESSION
+from modules.tg_bot.bot_config import (
+    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE,
+    CHATBOT_SETTINGS, SESSION
+)
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.user_db_utils import add_new_user, check_user_in_db
 from modules.tg_bot.quiz.handle_quiz import handle_quiz
@@ -46,6 +49,54 @@ def handle_callback_query(call: types.CallbackQuery) -> None:
         handle_delete_word(call.message)
 
 
+@bot.message_handler(commands=['help'])
+def help_message(message: types.Message) -> None:
+    """Handles the /help command and sends the user a list of available commands
+
+    Args:
+        message (types.Message): The message containing the /help command.
+
+    Returns:
+        None
+    """
+    commands_list = get_all_bot_commands()
+    commands = convert_command_list_to_text(commands_list)
+    bot.send_message(message.chat.id, "Доступные команды:\n" + commands)
+
+
+def get_all_bot_commands() -> list:
+    """Returns a list of all available bot commands."""
+    return [
+        f"{command['command']} - {command['description']}"
+        for command in CHATBOT_COMMANDS.values()
+    ]
+
+
+def convert_command_list_to_text(commands: list) -> str:
+    """Converts a bot command to its text representation."""
+    return '\n'.join(commands)
+
+
+@bot.message_handler(commands=['about'])
+def about_bot_command(message: types.Message) -> None:
+    """Handles the /about command and sends the user information about the bot.
+
+    Args:
+        message (types.Message): The message containing the /about command.
+
+    Returns:
+        None
+    """
+    bot.send_message(message.chat.id, CHATBOT_MESSAGE['about'])
+
+
+def set_bot_settings() -> None:
+    """Sets the bot's settings."""
+    bot.set_my_name(CHATBOT_SETTINGS['name'])
+    bot.set_my_description(CHATBOT_SETTINGS['description'])
+    bot.set_my_short_description(CHATBOT_SETTINGS['short_description'])
+
+
 def start_bot() -> None:
     """Starts the bot's polling process.
 
@@ -55,5 +106,6 @@ def start_bot() -> None:
     Returns:
         None
     """
+    set_bot_settings()
     menu_btn_commands()
     bot.polling()

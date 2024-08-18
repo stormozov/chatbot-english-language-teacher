@@ -1,7 +1,13 @@
 {
+  "bot_settings": {
+    "name": "Netology english chatbot",
+    "description": "Привет! Я бот для изучения английских слов. Вместе мы расширим ваш словарный запас и улучшить знания английского языка. Автор бота: @s_tormozov",
+    "short_description": "Изучаю английский язык с помощью карточек слов."
+  },
   "messages": {
     "start_message": "Привет! Меня зовут Netology english chatbot \uD83E\uDD16, и я здесь, чтобы помочь тебе изучать английский язык \uD83C\uDDFA\uD83C\uDDF8 с помощью карточек слов. Давай начнем?",
     "second_message": "Нажми на кнопку ниже \uD83D\uDC47, чтобы начать!",
+    "about": "Курсовая работа по модулю «Базы данных».\nРазработчик: @s_tormozov\nСсылка на репозитории:\nhttps://github.com/stormozov/chatbot-english-language-teacher",
     "help": "Бот поддерживает следующие команды:",
     "add_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово и его \uD83C\uDDF7\uD83C\uDDFA перевод через запятую (Например: 'English, Английский'):",
     "delete_user_word": "Введи \uD83C\uDDFA\uD83C\uDDF8 английское слово для удаления:",
