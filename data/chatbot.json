@@ -26,5 +26,31 @@
   "regex_patterns": {
     "eng": "^[a-zA-Z- ]+$",
     "rus": "^[а-яА-ЯёЁ\\s]+$"
+  },
+  "commands": {
+    "start": {
+      "command": "/start",
+      "description": "Начать"
+    },
+    "about": {
+      "command": "/about",
+      "description": "О боте"
+    },
+    "test_knowledge": {
+      "command": "/next",
+      "description": "Получить слово для изучения"
+    },
+    "add_word": {
+      "command": "/add_word",
+      "description": "Добавить английское слово"
+    },
+    "delete_word": {
+      "command": "/delete_word",
+      "description": "Удалить английское слово"
+    },
+    "help": {
+      "command": "/help",
+      "description": "Все команды бота"
+    }
   }
 }

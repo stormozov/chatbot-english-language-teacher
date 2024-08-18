@@ -4,6 +4,7 @@ from modules.tg_bot.bot_config import CHATBOT_BTNS, CHATBOT_MESSAGE, SESSION
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.user_db_utils import add_new_user, check_user_in_db
 from modules.tg_bot.quiz.handle_quiz import handle_quiz
+from modules.tg_bot.ui.drop_down_menu import menu_btn_commands
 from modules.tg_bot.ui.nav_menu import show_interaction_menu
 from modules.tg_bot.word.word_add import handle_add_word
 from modules.tg_bot.word.word_del import handle_delete_word
@@ -54,4 +55,5 @@ def start_bot() -> None:
     Returns:
         None
     """
+    menu_btn_commands()
     bot.polling()
