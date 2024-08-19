@@ -5,7 +5,7 @@
 Author: [STORMOZOV](https://github.com/stormozov)   
 Telegram: [@s_tormozov](https://t.me/s_tormozov)    
 Discord: [sergeytormozov](https://discordapp.com/users/754002267190853653)  
-Email: [Yandex](sergei.tormozow@yandex.ru)
+Email: sergei.tormozow@yandex.ru
 ## Описание
 Данный телеграм чат-бот предназначен для изучения английского языка 
 с помощью карточек слов. Программа написана на языке программирования Python 
