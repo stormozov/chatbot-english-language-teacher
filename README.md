@@ -4,7 +4,7 @@
 
 Author: [STORMOZOV](https://github.com/stormozov)   
 Telegram: [@s_tormozov](https://t.me/s_tormozov)    
-Discord: sergeytormozov
+Discord: sergeytormozov  
 Email: sergei.tormozow@yandex.ru
 ## Описание
 Данный телеграм чат-бот предназначен для изучения английского языка 
@@ -99,6 +99,12 @@ root (Корневая директория)
   разработки телеграм-бота.
 - Файл [main.py](https://github.com/stormozov/chatbot-english-language-teacher/blob/main/main.py), который отвечает за работу всей программы.
 
+## Схема базы данных
+<div align="center">
+  <img src="https://github.com/stormozov/chatbot-english-language-teacher/blob/main/db_scheme.png?raw=true" width="898" alt="Примерный дизайн бота"/>
+  <p> Схема базы данных </p>
+</div>
+
 ## Файл конфигурации
 Для хранения конфиденциальной информации используется файл `settings.ini`, 
 который должен быть расположен в корневой директории вместе с `main.py`.
@@ -191,4 +197,3 @@ python main.py
 число достигнет указанного в JSON файле, слово автоматически будет скрыто из 
 выборки пользователя и будет показано соответствующее сообщение об успешном 
 изучении этого слова.
-
