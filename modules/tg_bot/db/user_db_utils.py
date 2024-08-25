@@ -21,3 +21,4 @@ def add_new_user(session: SESSION, message: types.Message) -> None:
         username=message.chat.username
     )
     session.merge(new_user)
+    session.commit()

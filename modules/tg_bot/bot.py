@@ -1,8 +1,7 @@
 from telebot import types
 
 from modules.tg_bot.bot_config import (
-    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE,
-    CHATBOT_SETTINGS, SESSION
+    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE, SESSION
 )
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.user_db_utils import add_new_user, check_user_in_db
@@ -23,15 +22,14 @@ def start_message(message: types.Message) -> None:
         ['test_knowledge', 'add_word', 'delete_word']
         )
 
-    # Check if the user is already in the database
-    with SESSION as session:
-        handle_new_user(session, message)
+    handle_new_user(message)
+    menu_btn_commands()
 
 
-def handle_new_user(session: SESSION, message: types.Message) -> None:
+def handle_new_user(message: types.Message) -> None:
     """Handles the case when a new user is added to the database."""
     try:
-        with (session.begin()):
+        with SESSION as session:
             check_user_in_db(session, message) or \
              add_new_user(session, message)
     except Exception as e:
@@ -90,13 +88,6 @@ def about_bot_command(message: types.Message) -> None:
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['about'])
 
 
-def set_bot_settings() -> None:
-    """Sets the bot's settings."""
-    bot.set_my_name(CHATBOT_SETTINGS['name'])
-    bot.set_my_description(CHATBOT_SETTINGS['description'])
-    bot.set_my_short_description(CHATBOT_SETTINGS['short_description'])
-
-
 def start_bot() -> None:
     """Starts the bot's polling process.
 
@@ -106,6 +97,4 @@ def start_bot() -> None:
     Returns:
         None
     """
-    set_bot_settings()
-    menu_btn_commands()
     bot.polling()

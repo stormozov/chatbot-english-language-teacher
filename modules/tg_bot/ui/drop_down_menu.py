@@ -13,9 +13,9 @@ def convert_json_to_list() -> list[telebot.types.BotCommand]:
     """
     return [
         telebot.types.BotCommand(
-            key, CHATBOT_COMMANDS[key]['description']
+            value["command"], value["description"]
         )
-        for key in CHATBOT_COMMANDS.keys()
+        for value in CHATBOT_COMMANDS.values()
     ]
 
 
