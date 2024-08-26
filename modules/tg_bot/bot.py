@@ -29,16 +29,13 @@ def start_message(message: types.Message) -> None:
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call: types.CallbackQuery) -> None:
     """Handles the callback query from the bot."""
-    if call.data in ('test_knowledge', 'next'):
-        handle_quiz(call.message)
-    elif call.data == 'add_word':
-        handle_add_word(call.message)
-    elif call.data == 'delete_word':
-        handle_delete_word(call.message)
-    elif call.data == 'about':
-        handle_delete_word(call.message)
-    elif call.data == 'help':
-        handle_delete_word(call.message)
+    match call.data:
+        case 'test_knowledge' | 'next':
+            handle_quiz(call.message)
+        case 'add_word':
+            handle_add_word(call.message)
+        case 'delete_word':
+            handle_delete_word(call.message)
 
 
 @bot.message_handler(commands=['help'])
