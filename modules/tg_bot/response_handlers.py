@@ -1,6 +1,6 @@
 from telebot import types
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.bot_config import CHATBOT_ERRORS, CHATBOT_MESSAGE
+from .bot_init import bot
+from .bot_config import CHATBOT_ERRORS, CHATBOT_MESSAGE
 
 
 def inform_user_of_word_change(

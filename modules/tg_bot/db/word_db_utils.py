@@ -1,6 +1,6 @@
 from sqlalchemy import func, or_
-from modules.db.models import UserWordSetting, Word
-from modules.tg_bot.bot_config import SESSION
+from ...db import UserWordSetting, Word
+from ..bot_config import SESSION
 
 
 def word_exists_in_db(session: SESSION, word: str) -> Word | None:

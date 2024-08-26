@@ -1,6 +1,6 @@
 from telebot import types
-from modules.db.models import User
-from modules.tg_bot.bot_config import SESSION
+from ...db.models import User
+from ..bot_config import SESSION
 
 
 def check_user_in_db(session: SESSION, message: types.Message) -> User | None:

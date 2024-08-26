@@ -2,16 +2,19 @@ import random
 
 from telebot import types
 
-from modules.db.models import Word, UserWordSetting
-from modules.tg_bot.bot_config import SESSION
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.user_db_utils import get_user_id, handle_new_user
-from modules.tg_bot.db.word_db_utils import (
-    get_all_user_words, get_hidden_word_settings, get_user_word_setting
+from ...db.models import Word, UserWordSetting
+from ..bot_config import SESSION
+from ..bot_init import bot
+from ..db import (
+    get_all_user_words,
+    get_hidden_word_settings,
+    get_user_word_setting,
+    get_user_id,
+    handle_new_user
 )
-from modules.tg_bot.quiz.quiz_validator import validate_and_feedback_user_answer
-from modules.tg_bot.ui.quiz_menu import show_word_variant_menu
-from modules.tg_bot.response_handlers import inform_user_of_word_change
+from ..quiz.quiz_validator import validate_and_feedback_user_answer
+from ..ui import show_word_variant_menu
+from ..response_handlers import inform_user_of_word_change
 
 
 @bot.message_handler(commands=['test_knowledge', 'next'])

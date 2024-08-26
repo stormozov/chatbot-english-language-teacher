@@ -1,7 +1,7 @@
 import telebot
 
-from modules.tg_bot.bot_config import CHATBOT_COMMANDS
-from modules.tg_bot.bot_init import bot
+from ..bot_config import CHATBOT_COMMANDS
+from ..bot_init import bot
 
 
 def convert_json_to_list() -> list[telebot.types.BotCommand]:

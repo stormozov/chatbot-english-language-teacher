@@ -1,6 +1,6 @@
 from telebot import types
 
-from modules.tg_bot.response_handlers import inform_user_of_word_change
+from ..response_handlers import inform_user_of_word_change
 
 
 def split_user_input(message: types.Message) -> list:

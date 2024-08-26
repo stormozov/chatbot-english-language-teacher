@@ -1,15 +1,11 @@
 from telebot import types
 
-from modules.tg_bot.bot_config import (
-    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE
-)
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.user_db_utils import handle_new_user
-from modules.tg_bot.quiz.handle_quiz import handle_quiz
-from modules.tg_bot.ui.drop_down_menu import menu_btn_commands
-from modules.tg_bot.ui.nav_menu import show_interaction_menu
-from modules.tg_bot.word.word_add import handle_add_word
-from modules.tg_bot.word.word_del import handle_delete_word
+from .bot_config import CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE
+from .bot_init import bot
+from .db import handle_new_user
+from .quiz import handle_quiz
+from .ui import menu_btn_commands, show_interaction_menu
+from .word import handle_add_word, handle_delete_word
 
 
 @bot.message_handler(commands=['start'])

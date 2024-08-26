@@ -1,10 +1,10 @@
 from sqlalchemy.exc import IntegrityError
 from telebot import types
 
-from modules.db.models import UserWordSetting, Word
-from modules.tg_bot.bot_config import SESSION
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.word_db_utils import word_exists_in_db
+from ...db.models import UserWordSetting, Word
+from ..bot_config import SESSION
+from ..bot_init import bot
+from ..db import word_exists_in_db
 
 
 def add_word_to_db(

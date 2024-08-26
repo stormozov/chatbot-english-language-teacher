@@ -1,16 +1,16 @@
 from telebot import types
 
-from modules.tg_bot.bot_config import (
+from ..bot_config import (
     SESSION, CHATBOT_MESSAGE, CHATBOT_BTNS, CHATBOT_REGEX
 )
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.word_db_crud import add_word_to_db
-from modules.tg_bot.db.word_db_utils import get_word_by_user_id
-from modules.tg_bot.db.user_db_utils import get_user_id, handle_new_user
-from modules.tg_bot.response_handlers import inform_user_of_word_change
-from modules.tg_bot.ui.nav_menu import show_interaction_menu
-from modules.tg_bot.word.input_validation import validate_user_input
-from modules.tg_bot.word.word_format import check_word_format
+from ..bot_init import bot
+from ..db import (
+    add_word_to_db, get_user_id, handle_new_user, get_word_by_user_id
+)
+from ..response_handlers import inform_user_of_word_change
+from ..ui import show_interaction_menu
+from .input_validation import validate_user_input
+from .word_format import check_word_format
 
 
 @bot.message_handler(commands=['add_word'])

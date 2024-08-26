@@ -2,11 +2,11 @@ from datetime import datetime
 
 from telebot import types
 
-from modules.db.models import UserWordSetting, Word
-from modules.tg_bot.bot_config import CHATBOT_BTNS, CHATBOT_DATA, SESSION
-from modules.tg_bot.bot_init import bot
-from modules.tg_bot.response_handlers import inform_user_of_word_change
-from modules.tg_bot.ui.nav_menu import show_interaction_menu
+from ...db import UserWordSetting, Word
+from ..bot_config import CHATBOT_BTNS, CHATBOT_DATA, SESSION
+from ..bot_init import bot
+from ..response_handlers import inform_user_of_word_change
+from ..ui import show_interaction_menu
 
 
 def validate_and_feedback_user_answer(

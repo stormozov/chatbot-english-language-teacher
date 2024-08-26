@@ -1,7 +1,7 @@
-from modules.db.db_session import create_db_session
-from modules.fs_tools.path_utils import get_absolute_path
-from modules.fs_tools.read_file import read_file
-from modules.fs_tools.read_config import read_config
+from ..db.db_session import create_db_session
+from ..fs_tools.path_utils import get_absolute_path
+from ..fs_tools.read_file import read_file
+from ..fs_tools.read_config import read_config
 
 path_to_config: str = get_absolute_path(['settings.ini'])
 path_to_json: str = get_absolute_path(['data', 'chatbot.json'])

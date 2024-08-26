@@ -1,9 +1,7 @@
-from pprint import pprint
-
 from sqlalchemy.exc import DatabaseError
 
-from modules.fs_tools.read_file import read_file
-from modules.db.models import Word
+from ..fs_tools.read_file import read_file
+from .models import Word
 
 
 def import_json_data_to_db(session, file_path: str) -> None:

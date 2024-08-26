@@ -1,6 +1,6 @@
 import random
 from telebot import types
-from modules.db.models import Word
+from ...db import Word
 
 
 def generate_answer_options(word_list: list, target_word: Word) -> list:

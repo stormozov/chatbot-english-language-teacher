@@ -1,5 +1,5 @@
 from telebot import types
-from modules.tg_bot.bot_init import bot
+from ..bot_init import bot
 
 
 def create_inline_keyboard(row_width: int) -> types.InlineKeyboardMarkup:

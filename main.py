@@ -1,12 +1,10 @@
 from modules.fs_tools.read_config import read_config
-from modules.db.db_operations import create_tables
-from modules.db.db_session import create_db_session
-from modules.fs_tools.path_utils import get_absolute_path
-from modules.db.json2db import import_json_data_to_db
-from modules.tg_bot.bot import start_bot
+from modules.db import create_tables, create_db_session, import_json_data_to_db
+from modules.fs_tools import get_absolute_path
+from modules.tg_bot import start_bot
 
 
-def bootstrap_database():
+def bootstrap_db():
     # Get absolute path to config and data files
     path_to_config: str = get_absolute_path(['settings.ini'])
     path_to_json: str = get_absolute_path(['data', 'words.json'])
@@ -19,14 +17,11 @@ def bootstrap_database():
     create_tables(engine)
 
     # Create a session for working with the database
-    session = create_db_session(DB)[0]
-
-    # Import data from a JSON file to the database
-    import_json_data_to_db(session, path_to_json)
-
-    session.close()
+    with create_db_session(DB)[0] as session:
+        # Import data from a JSON file to the database
+        import_json_data_to_db(session, path_to_json)
 
 
 if __name__ == '__main__':
-    bootstrap_database()
+    bootstrap_db()
     start_bot()
