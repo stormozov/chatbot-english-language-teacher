@@ -1,8 +1,11 @@
 from telebot import types
 
-from .bot_config import CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE
+from .bot_config import CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE, SESSION
 from .bot_init import bot
-from .db import handle_new_user
+from .db import (
+    get_all_user_words, get_hidden_word_settings, get_user_id,
+    handle_new_user
+)
 from .quiz import handle_quiz
 from .ui import menu_btn_commands, show_interaction_menu
 from .word import handle_add_word, handle_delete_word
@@ -19,7 +22,6 @@ def start_message(message: types.Message) -> None:
         )
 
     handle_new_user(message)
-    menu_btn_commands()
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -77,6 +79,26 @@ def about_bot_command(message: types.Message) -> None:
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['about'])
 
 
+@bot.message_handler(commands=['hidden_words'])
+def hidden_words_command(message: types.Message) -> None:
+    """Handles the /hidden_words command and sends the user a list of hidden
+    words."""
+    handle_new_user(message)
+    with SESSION as session:
+        user_id: int = get_user_id(session, message)
+        user_words = get_hidden_word_settings(session, user_id)
+        msg_title = 'Все ваши скрытые слова:\n'
+        msg_body = ''.join([
+            f'\n🇺🇸 {word.word.word} - 🇷🇺 {word.word.translation}'
+            for word in user_words
+        ])
+
+        if not msg_body:
+            msg_title = 'Скрытых слов нет'
+
+        bot.send_message(message.chat.id, msg_title + msg_body)
+
+
 def start_bot() -> None:
     """Starts the bot's polling process.
 
@@ -86,4 +108,5 @@ def start_bot() -> None:
     Returns:
         None
     """
+    menu_btn_commands()
     bot.polling()

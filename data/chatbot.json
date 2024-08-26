@@ -52,6 +52,10 @@
     "help": {
       "command": "/help",
       "description": "Все команды бота"
+    },
+    "hidden_words": {
+      "command": "/hidden_words",
+      "description": "Ваши скрытые слова"
     }
   }
 }
