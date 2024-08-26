@@ -1,10 +1,10 @@
 from telebot import types
 
 from modules.tg_bot.bot_config import (
-    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE, SESSION
+    CHATBOT_BTNS, CHATBOT_COMMANDS, CHATBOT_MESSAGE
 )
 from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.user_db_utils import add_new_user, check_user_in_db
+from modules.tg_bot.db.user_db_utils import handle_new_user
 from modules.tg_bot.quiz.handle_quiz import handle_quiz
 from modules.tg_bot.ui.drop_down_menu import menu_btn_commands
 from modules.tg_bot.ui.nav_menu import show_interaction_menu
@@ -26,16 +26,6 @@ def start_message(message: types.Message) -> None:
     menu_btn_commands()
 
 
-def handle_new_user(message: types.Message) -> None:
-    """Handles the case when a new user is added to the database."""
-    try:
-        with SESSION as session:
-            check_user_in_db(session, message) or \
-             add_new_user(session, message)
-    except Exception as e:
-        print(e)
-
-
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback_query(call: types.CallbackQuery) -> None:
     """Handles the callback query from the bot."""
@@ -44,6 +34,10 @@ def handle_callback_query(call: types.CallbackQuery) -> None:
     elif call.data == 'add_word':
         handle_add_word(call.message)
     elif call.data == 'delete_word':
+        handle_delete_word(call.message)
+    elif call.data == 'about':
+        handle_delete_word(call.message)
+    elif call.data == 'help':
         handle_delete_word(call.message)
 
 
@@ -57,6 +51,7 @@ def help_message(message: types.Message) -> None:
     Returns:
         None
     """
+    handle_new_user(message)
     commands_list = get_all_bot_commands()
     commands = convert_command_list_to_text(commands_list)
     bot.send_message(message.chat.id, "Доступные команды:\n" + commands)
@@ -85,6 +80,7 @@ def about_bot_command(message: types.Message) -> None:
     Returns:
         None
     """
+    handle_new_user(message)
     bot.send_message(message.chat.id, CHATBOT_MESSAGE['about'])
 
 

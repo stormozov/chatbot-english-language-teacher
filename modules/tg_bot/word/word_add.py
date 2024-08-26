@@ -6,7 +6,7 @@ from modules.tg_bot.bot_config import (
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.word_db_crud import add_word_to_db
 from modules.tg_bot.db.word_db_utils import get_word_by_user_id
-from modules.tg_bot.db.user_db_utils import get_user_id
+from modules.tg_bot.db.user_db_utils import get_user_id, handle_new_user
 from modules.tg_bot.response_handlers import inform_user_of_word_change
 from modules.tg_bot.ui.nav_menu import show_interaction_menu
 from modules.tg_bot.word.input_validation import validate_user_input
@@ -20,6 +20,7 @@ def handle_add_word(user_message: types.Message) -> None:
     Sends a message to the chat with the prompt to add a user word and
     registers the next step handler to process the request.
     """
+    handle_new_user(user_message)
     bot.send_message(user_message.chat.id, CHATBOT_MESSAGE['add_user_word'])
     bot.register_next_step_handler(user_message, handle_add_word_request)
 

@@ -19,3 +19,13 @@ def add_new_user(session: SESSION, message: types.Message) -> None:
     new_user = User(tg_id=message.chat.id)
     session.merge(new_user)
     session.commit()
+
+
+def handle_new_user(message: types.Message) -> None:
+    """Handles the case when a new user is added to the database."""
+    try:
+        with SESSION as session:
+            check_user_in_db(session, message) or \
+             add_new_user(session, message)
+    except Exception as e:
+        print(e)

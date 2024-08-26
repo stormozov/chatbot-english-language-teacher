@@ -5,7 +5,7 @@ from telebot import types
 from modules.db.models import Word, UserWordSetting
 from modules.tg_bot.bot_config import SESSION
 from modules.tg_bot.bot_init import bot
-from modules.tg_bot.db.user_db_utils import get_user_id
+from modules.tg_bot.db.user_db_utils import get_user_id, handle_new_user
 from modules.tg_bot.db.word_db_utils import (
     get_all_user_words, get_hidden_word_settings, get_user_word_setting
 )
@@ -30,6 +30,7 @@ def handle_quiz(message: types.Message) -> None:
         None
     """
     session = SESSION
+    handle_new_user(message)
     user_id: int = get_user_id(session, message)
     all_user_words: list = get_all_user_words(session, user_id)
     visible_words: list[Word] = get_visible_words(
