@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from telebot import types
 
-from modules.db.models import TranslatedWord, UserWordSetting, Word
+from modules.db.models import UserWordSetting, Word
 from modules.tg_bot.bot_config import SESSION
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.word_db_utils import word_exists_in_db
@@ -10,23 +10,20 @@ from modules.tg_bot.db.word_db_utils import word_exists_in_db
 def add_word_to_db(
         session: SESSION,
         word: str,
-        user_id: int,
         translation: str,
+        user_id: int,
         message: types.Message
 ) -> None:
     """Add a word to the database"""
     try:
-        word_obj: Word = Word(word=word, user_id=user_id, category_id=3)
-        translated_word_obj: TranslatedWord = TranslatedWord(
-            word=word_obj,
-            translation=translation,
-            user_id=user_id
+        word_obj: Word = Word(
+            word=word, user_id=user_id, translation=translation
         )
         user_word_setting_obj: UserWordSetting = UserWordSetting(
             user_id=user_id, word=word_obj
         )
 
-        session.add_all([word_obj, translated_word_obj, user_word_setting_obj])
+        session.add_all([word_obj, user_word_setting_obj])
         session.commit()
     except IntegrityError:
         session.rollback()
@@ -38,22 +35,12 @@ def add_word_to_db(
 
 def delete_word_from_db(session: SESSION, word_obj: Word) -> None:
     """Delete a word from the database"""
-    translated_words: list = (
-        session
-        .query(TranslatedWord)
-        .filter_by(word_id=word_obj.id)
-        .all()
-    )
-
     user_word_setting_obj: UserWordSetting = (
         session
         .query(UserWordSetting)
         .filter_by(word_id=word_obj.id)
         .first()
     )
-
-    for translated_word in translated_words:
-        session.delete(translated_word)
 
     if user_word_setting_obj:
         session.delete(user_word_setting_obj)

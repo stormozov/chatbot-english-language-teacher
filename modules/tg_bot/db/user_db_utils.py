@@ -16,9 +16,6 @@ def get_user_id(session: SESSION, message: types.Message) -> int | None:
 
 def add_new_user(session: SESSION, message: types.Message) -> None:
     """Add a new user to the database"""
-    new_user: User = User(
-        tg_id=message.chat.id,
-        username=message.chat.username
-    )
+    new_user = User(tg_id=message.chat.id)
     session.merge(new_user)
     session.commit()

@@ -1,5 +1,5 @@
 from sqlalchemy import func, or_
-from modules.db.models import TranslatedWord, UserWordSetting, Word
+from modules.db.models import UserWordSetting, Word
 from modules.tg_bot.bot_config import SESSION
 
 
@@ -107,25 +107,3 @@ def get_user_word_setting(session: SESSION, user_id: int, word_id: int) \
         session.commit()
 
     return user_word_setting
-
-
-def get_all_translations_word(session: SESSION, word_id: int) \
-        -> list[TranslatedWord]:
-    """Retrieves the translations for a given word.
-
-    This function queries the database to retrieve the translations for a word
-    with the specified ID.
-
-    Args:
-        session (SESSION): The database session.
-        word_id (int): The ID of the word.
-
-    Returns:
-        list[TranslatedWord]: A list of translations for the word.
-    """
-    return (
-        session
-        .query(TranslatedWord)
-        .filter_by(word_id=word_id)
-        .all()
-    )

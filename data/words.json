@@ -1,29 +1,22 @@
 {
   "categories": {
-    "colors": {
-      "words": [
-        { "id": 1, "word": "Red", "translation": "Красный" },
-        { "id": 2, "word": "Blue", "translation": "Синий" },
-        { "id": 3, "word": "Green", "translation": "Зеленый" },
-        { "id": 4, "word": "Yellow", "translation": "Желтый" },
-        { "id": 5, "word": "Orange", "translation": "Оранжевый" },
-        { "id": 6, "word": "Purple", "translation": "Фиолетовый" },
-        { "id": 7, "word": "Pink", "translation": "Розовый" },
-        { "id": 8, "word": "Black", "translation": "Черный" },
-        { "id": 9, "word": "White", "translation": "Белый" },
-        { "id": 10, "word": "Gray", "translation": "Серый" }
-      ]
-    },
-    "seasons": {
-      "words": [
-        { "id": 11, "word": "Spring", "translation": "Весна" },
-        { "id": 12, "word": "Summer", "translation": "Лето" },
-        { "id": 13, "word": "Autumn", "translation": "Осень" },
-        { "id": 14, "word": "Winter", "translation": "Зима" }
-      ]
-    },
-    "custom": {
-      "words": []
-    }
+    "colors": [
+      { "word": "Red", "translation": "Красный" },
+      { "word": "Blue", "translation": "Синий" },
+      { "word": "Green", "translation": "Зеленый" },
+      { "word": "Yellow", "translation": "Желтый" },
+      { "word": "Orange", "translation": "Оранжевый" },
+      { "word": "Purple", "translation": "Фиолетовый" },
+      { "word": "Pink", "translation": "Розовый" },
+      { "word": "Black", "translation": "Черный" },
+      { "word": "White", "translation": "Белый" },
+      { "word": "Gray", "translation": "Серый" }
+    ],
+    "seasons": [
+      { "word": "Spring", "translation": "Весна" },
+      { "word": "Summer", "translation": "Лето" },
+      { "word": "Autumn", "translation": "Осень" },
+      { "word": "Winter", "translation": "Зима" }
+    ]
   }
 }

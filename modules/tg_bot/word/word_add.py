@@ -50,8 +50,8 @@ def handle_add_word_request(user_message: types.Message) -> None:
             add_word_to_db(
                 session,
                 word,
-                user_id,
                 translation,
+                user_id,
                 user_message
             )
             inform_user_of_word_change(

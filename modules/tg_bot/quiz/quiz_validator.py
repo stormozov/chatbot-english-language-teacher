@@ -13,7 +13,7 @@ def validate_and_feedback_user_answer(
     message: types.Message,
     user_word_setting: UserWordSetting,
     selected_word: Word,
-    translations: list
+    translation: str
 ) -> None:
     """Validates user's response and provides feedback based on its accuracy.
 
@@ -22,7 +22,7 @@ def validate_and_feedback_user_answer(
         user_word_setting (UserWordSetting): The user's word setting.
         selected_word (Word): Selected word to be checked against
             the user's response.
-        translations (list): A list of translations for the selected word.
+        translation (str): The translation of the selected word.
 
     Returns:
         None
@@ -35,7 +35,7 @@ def validate_and_feedback_user_answer(
         message,
         is_correct,
         correct_answer,
-        translations
+        translation
     )
 
     if is_correct:
@@ -61,12 +61,12 @@ def validate_and_feedback_user_answer(
 
 
 def get_feedback_message(
-        is_correct: bool, correct_answer: str, translations: list
+        is_correct: bool, correct_answer: str, translation: str
 ) -> str:
     """Returns a feedback message based on whether the answer is correct."""
     if is_correct:
         return (f'Правильно!\nСлово 🇺🇸 {correct_answer} переводится как '
-                f'🇷🇺 {translations[0].translation}')
+                f'🇷🇺 {translation}')
     else:
         return f'Неправильно.\nПравильный ответ: 🇺🇸 {correct_answer}'
 
@@ -75,13 +75,13 @@ def send_feedback_message(
         user_message: types.Message,
         is_answer_correct: bool,
         correct_answer_text: str,
-        translations_list: list
+        translation: str
 ) -> None:
     """Sends a feedback message to the user based on their answer."""
     feedback_text: str = get_feedback_message(
         is_answer_correct,
         correct_answer_text,
-        translations_list
+        translation
     )
     result_icon: str = '✅' if is_answer_correct else '❌'
     bot.send_message(user_message.chat.id, result_icon)

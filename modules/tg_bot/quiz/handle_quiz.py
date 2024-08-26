@@ -2,13 +2,12 @@ import random
 
 from telebot import types
 
-from modules.db.models import Word, TranslatedWord, UserWordSetting
-from modules.tg_bot.bot_config import CHATBOT_MESSAGE, SESSION
+from modules.db.models import Word, UserWordSetting
+from modules.tg_bot.bot_config import SESSION
 from modules.tg_bot.bot_init import bot
 from modules.tg_bot.db.user_db_utils import get_user_id
 from modules.tg_bot.db.word_db_utils import (
-    get_all_translations_word, get_all_user_words,
-    get_hidden_word_settings, get_user_word_setting
+    get_all_user_words, get_hidden_word_settings, get_user_word_setting
 )
 from modules.tg_bot.quiz.quiz_validator import validate_and_feedback_user_answer
 from modules.tg_bot.ui.quiz_menu import show_word_variant_menu
@@ -45,19 +44,17 @@ def handle_quiz(message: types.Message) -> None:
     user_word_setting = get_user_word_setting(
         session, user_id, target_word.id
     )
-    translations: list[TranslatedWord] = get_all_translations_word(
-        session, target_word.id
-        )
 
     send_message_to_user(
-        message, translations[0].translation,
-        all_user_words, target_word
-        )
+        message,
+        all_user_words,
+        target_word,
+        target_word.translation
+    )
     register_validation_step(
         message,
         user_word_setting,
-        target_word,
-        translations
+        target_word
     )
 
 
@@ -95,8 +92,8 @@ def get_visible_words(session: SESSION, user_id: int, user_words: list[Word]) \
 
 
 def send_message_to_user(
-        message: types.Message, translation_word: str,
-        user_words: list[Word], target_word: Word
+        message: types.Message, user_words: list[Word], target_word: Word,
+        translation: str
 ):
     """Sends a message to the user with the word's translation.
 
@@ -107,31 +104,27 @@ def send_message_to_user(
 
     Args:
         message (types.Message): The message that triggered this function.
-        translation_word (str): The translation of the target word.
         user_words (list[Word]): The list of words for the user.
         target_word (Word): The target word being tested.
+        translation (str): The translation of the target word.
 
     Returns:
         None
     """
-    if translation_word:
-        markup: types.ReplyKeyboardMarkup = show_word_variant_menu(
-            user_words, target_word
-        )
-        bot.send_message(
-            message.chat.id,
-            f'Выбери перевод слова:\n {translation_word}',
-            reply_markup=markup
-        )
-    else:
-        bot.send_message(
-            message.chat.id, CHATBOT_MESSAGE['not_found_translated_word']
-        )
+    markup: types.ReplyKeyboardMarkup = show_word_variant_menu(
+        user_words, target_word
+    )
+    bot.send_message(
+        message.chat.id,
+        f'Выбери перевод слова:\n🇷🇺 {translation}',
+        reply_markup=markup
+    )
 
 
 def register_validation_step(
-        message: types.Message, user_word_setting: UserWordSetting,
-        word: Word, translations: list[TranslatedWord]
+        message: types.Message,
+        user_word_setting: UserWordSetting,
+        word: Word
 ):
     """Registers the next step handler for the user's response.
 
@@ -143,7 +136,6 @@ def register_validation_step(
         message (types.Message): The message that triggered this function.
         user_word_setting (UserWordSetting): The user's word setting.
         word (Word): The word being tested.
-        translations (list[TranslatedWord]): The word's translations list.
 
     Returns:
         None
@@ -153,5 +145,5 @@ def register_validation_step(
         validate_and_feedback_user_answer,
         user_word_setting,
         word,
-        translations
+        word.translation
     )
